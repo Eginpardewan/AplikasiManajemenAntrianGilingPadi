@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace AplikasiGilinganPadi
@@ -37,7 +35,6 @@ namespace AplikasiGilinganPadi
 
                 if (reader.Read())
                 {
-                    // Isi data antrian (readonly)
                     txtNomorAntrian.Text = reader["nomor_antrian"].ToString();
                     txtNamaPetani.Text = reader["nama_petani"].ToString();
                     txtAlamat.Text = reader["alamat"].ToString();
@@ -45,16 +42,13 @@ namespace AplikasiGilinganPadi
                     beratGabah = Convert.ToDecimal(reader["berat_gabah"]);
                     txtBeratGabah.Text = beratGabah.ToString("F2");
 
-                    // FORM KOSONG - Tidak ada estimasi otomatis
                     txtBerasDihasilkan.Clear();
                     txtDedak.Clear();
 
-                    // Set label info maksimal
                     lblInfoMaksimal.Text = $"⚠️ Maksimal total beras + dedak = {beratGabah:F2} kg";
                     lblInfoBatasBeras.Text = $"Max: {beratGabah:F2} kg";
                     lblInfoBatasDedak.Text = $"Max: {beratGabah:F2} kg";
 
-                    // Set focus ke field beras dihasilkan
                     txtBerasDihasilkan.Focus();
                 }
                 reader.Close();
@@ -67,7 +61,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== BATASI NILAI AGAR TIDAK MELEBIHI BATAS ==========
+        // ========== CEK DAN BATASI NILAI ==========
         private void BatasiNilai(TextBox textBox, decimal batasMaksimal)
         {
             if (string.IsNullOrEmpty(textBox.Text))
@@ -100,21 +94,21 @@ namespace AplikasiGilinganPadi
                 {
                     if (beras > beratGabah)
                     {
-                        txtBerasDihasilkan.BackColor = Color.LightCoral;
+                        txtBerasDihasilkan.BackColor = System.Drawing.Color.LightCoral;
                         lblStatusBeras.Text = "❌ Melebihi batas!";
-                        lblStatusBeras.ForeColor = Color.Red;
+                        lblStatusBeras.ForeColor = System.Drawing.Color.Red;
                     }
                     else
                     {
-                        txtBerasDihasilkan.BackColor = Color.White;
-                        lblStatusBeras.Text = "✅ OK";
-                        lblStatusBeras.ForeColor = Color.Green;
+                        txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
+                        lblStatusBeras.Text = "OK";
+                        lblStatusBeras.ForeColor = System.Drawing.Color.Green;
                     }
                 }
             }
             else
             {
-                txtBerasDihasilkan.BackColor = Color.White;
+                txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
                 lblStatusBeras.Text = "";
             }
 
@@ -125,21 +119,21 @@ namespace AplikasiGilinganPadi
                 {
                     if (dedak > beratGabah)
                     {
-                        txtDedak.BackColor = Color.LightCoral;
+                        txtDedak.BackColor = System.Drawing.Color.LightCoral;
                         lblStatusDedak.Text = "❌ Melebihi batas!";
-                        lblStatusDedak.ForeColor = Color.Red;
+                        lblStatusDedak.ForeColor = System.Drawing.Color.Red;
                     }
                     else
                     {
-                        txtDedak.BackColor = Color.White;
-                        lblStatusDedak.Text = "✅ OK";
-                        lblStatusDedak.ForeColor = Color.Green;
+                        txtDedak.BackColor = System.Drawing.Color.White;
+                        lblStatusDedak.Text = "OK";
+                        lblStatusDedak.ForeColor = System.Drawing.Color.Green;
                     }
                 }
             }
             else
             {
-                txtDedak.BackColor = Color.White;
+                txtDedak.BackColor = System.Drawing.Color.White;
                 lblStatusDedak.Text = "";
             }
 
@@ -153,12 +147,12 @@ namespace AplikasiGilinganPadi
                     if (total > beratGabah)
                     {
                         lblStatusTotal.Text = $"❌ Total {total:F2} kg melebihi {beratGabah:F2} kg!";
-                        lblStatusTotal.ForeColor = Color.Red;
+                        lblStatusTotal.ForeColor = System.Drawing.Color.Red;
                     }
                     else
                     {
-                        lblStatusTotal.Text = $"✅ Total {total:F2} kg (OK)";
-                        lblStatusTotal.ForeColor = Color.Green;
+                        lblStatusTotal.Text = $"Total {total:F2} kg (OK)";
+                        lblStatusTotal.ForeColor = System.Drawing.Color.Green;
                     }
                 }
             }
@@ -181,24 +175,28 @@ namespace AplikasiGilinganPadi
             UpdateStatusWarna();
         }
 
-        // ========== VALIDASI INPUT HANYA ANGKA ==========
+        // ========== MENCEGAH INPUT TIDAK VALID ==========
         private void txtBerasDihasilkan_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // Izinkan backspace, delete, enter, tab
             if (char.IsControl(e.KeyChar))
                 return;
 
+            // Izinkan angka dan titik
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.')
             {
                 e.Handled = true;
                 return;
             }
 
+            // Cegah titik jika sudah ada titik
             if (e.KeyChar == '.' && txtBerasDihasilkan.Text.Contains("."))
             {
                 e.Handled = true;
                 return;
             }
 
+            // Cegah titik di awal
             if (e.KeyChar == '.' && string.IsNullOrEmpty(txtBerasDihasilkan.Text))
             {
                 e.Handled = true;
@@ -230,10 +228,64 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== MENCEGAH PASTE (CTRL+V) YANG TIDAK VALID ==========
+        private void txtBerasDihasilkan_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                e.SuppressKeyPress = true;
+                string clipboardText = Clipboard.GetText();
+
+                if (decimal.TryParse(clipboardText, out decimal nilai))
+                {
+                    if (nilai <= beratGabah && nilai >= 0)
+                    {
+                        txtBerasDihasilkan.Text = nilai.ToString("F2");
+                    }
+                    else
+                    {
+                        MessageBox.Show($"❌ Nilai tidak valid! Maksimal {beratGabah:F2} kg",
+                            "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("❌ Harap masukkan angka yang valid!",
+                        "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
+        private void txtDedak_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                e.SuppressKeyPress = true;
+                string clipboardText = Clipboard.GetText();
+
+                if (decimal.TryParse(clipboardText, out decimal nilai))
+                {
+                    if (nilai <= beratGabah && nilai >= 0)
+                    {
+                        txtDedak.Text = nilai.ToString("F2");
+                    }
+                    else
+                    {
+                        MessageBox.Show($"❌ Nilai tidak valid! Maksimal {beratGabah:F2} kg",
+                            "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("❌ Harap masukkan angka yang valid!",
+                        "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
         // ========== TOMBOL SIMPAN ==========
         private void btnSimpan_Click(object sender, EventArgs e)
         {
-            // Validasi input Beras Dihasilkan
             if (string.IsNullOrEmpty(txtBerasDihasilkan.Text))
             {
                 MessageBox.Show("❌ Beras yang dihasilkan harus diisi!", "Validasi",
@@ -242,7 +294,6 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi input Dedak
             if (string.IsNullOrEmpty(txtDedak.Text))
             {
                 MessageBox.Show("❌ Dedak yang dihasilkan harus diisi!", "Validasi",
@@ -253,65 +304,49 @@ namespace AplikasiGilinganPadi
 
             decimal berasDihasilkan, dedak;
 
-            // Validasi format angka Beras
             if (!decimal.TryParse(txtBerasDihasilkan.Text, out berasDihasilkan))
             {
-                MessageBox.Show("❌ Format Beras yang dihasilkan tidak valid! Masukkan angka yang benar.\nContoh: 65.5",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("❌ Format Beras tidak valid!", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtBerasDihasilkan.Focus();
                 return;
             }
 
-            // Validasi format angka Dedak
             if (!decimal.TryParse(txtDedak.Text, out dedak))
             {
-                MessageBox.Show("❌ Format Dedak tidak valid! Masukkan angka yang benar.\nContoh: 30.5",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtDedak.Focus();
-                return;
-            }
-
-            // Validasi tidak boleh negatif
-            if (berasDihasilkan < 0)
-            {
-                MessageBox.Show("❌ Beras yang dihasilkan tidak boleh negatif!", "Validasi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtBerasDihasilkan.Focus();
-                return;
-            }
-
-            if (dedak < 0)
-            {
-                MessageBox.Show("❌ Dedak tidak boleh negatif!", "Validasi",
+                MessageBox.Show("❌ Format Dedak tidak valid!", "Validasi",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtDedak.Focus();
                 return;
             }
 
-            // Validasi Beras tidak boleh melebihi Berat Gabah
+            if (berasDihasilkan < 0 || dedak < 0)
+            {
+                MessageBox.Show("❌ Nilai tidak boleh negatif!", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (berasDihasilkan > beratGabah)
             {
-                MessageBox.Show($"❌ Beras yang dihasilkan ({berasDihasilkan:F2} kg) tidak boleh melebihi Berat Gabah ({beratGabah:F2} kg)!",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"❌ Beras tidak boleh melebihi {beratGabah:F2} kg!", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtBerasDihasilkan.Focus();
                 return;
             }
 
-            // Validasi Dedak tidak boleh melebihi Berat Gabah
             if (dedak > beratGabah)
             {
-                MessageBox.Show($"❌ Dedak ({dedak:F2} kg) tidak boleh melebihi Berat Gabah ({beratGabah:F2} kg)!",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"❌ Dedak tidak boleh melebihi {beratGabah:F2} kg!", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtDedak.Focus();
                 return;
             }
 
-            // Validasi total tidak melebihi berat gabah
             if (berasDihasilkan + dedak > beratGabah)
             {
                 MessageBox.Show($"❌ Total Beras + Dedak ({berasDihasilkan + dedak:F2} kg) melebihi Berat Gabah ({beratGabah:F2} kg)!",
                     "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtBerasDihasilkan.Focus();
                 return;
             }
 
@@ -320,7 +355,6 @@ namespace AplikasiGilinganPadi
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                // Cek apakah sudah ada hasil giling untuk antrian ini
                 string cekQuery = "SELECT COUNT(*) FROM HasilGiling WHERE id_antrian = @id";
                 SqlCommand cekCmd = new SqlCommand(cekQuery, conn);
                 cekCmd.Parameters.AddWithValue("@id", idAntrian);
@@ -328,7 +362,6 @@ namespace AplikasiGilinganPadi
 
                 if (exists > 0)
                 {
-                    // Update data yang sudah ada
                     string query = @"UPDATE HasilGiling SET 
                                     beras_dihasilkan = @beras, 
                                     dedak = @dedak 
@@ -344,7 +377,6 @@ namespace AplikasiGilinganPadi
                 }
                 else
                 {
-                    // Insert data baru
                     string query = @"INSERT INTO HasilGiling 
                                     (id_antrian, nama_petani, alamat, no_telepon, beras_dihasilkan, dedak) 
                                     VALUES 
@@ -378,10 +410,9 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== TOMBOL BATAL ==========
         private void btnBatal_Click(object sender, EventArgs e)
         {
-            DialogResult confirm = MessageBox.Show("Yakin ingin membatalkan pencatatan hasil giling?",
+            DialogResult confirm = MessageBox.Show("Yakin ingin membatalkan?",
                 "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (confirm == DialogResult.Yes)
@@ -390,7 +421,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== FORM CLOSING ==========
         private void FormHasilGiling_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)

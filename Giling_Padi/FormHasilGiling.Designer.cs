@@ -21,6 +21,8 @@ namespace AplikasiGilinganPadi
         private System.Windows.Forms.Label lblBerasDihasilkan;
         private System.Windows.Forms.Label lblDedak;
         private System.Windows.Forms.Label lblInfoMaksimal;
+
+        // TAMBAHKAN LABEL STATUS
         private System.Windows.Forms.Label lblInfoBatasBeras;
         private System.Windows.Forms.Label lblInfoBatasDedak;
         private System.Windows.Forms.Label lblStatusBeras;
@@ -67,6 +69,8 @@ namespace AplikasiGilinganPadi
             this.lblBerasDihasilkan = new System.Windows.Forms.Label();
             this.lblDedak = new System.Windows.Forms.Label();
             this.lblInfoMaksimal = new System.Windows.Forms.Label();
+
+            // INISIALISASI LABEL STATUS BARU
             this.lblInfoBatasBeras = new System.Windows.Forms.Label();
             this.lblInfoBatasDedak = new System.Windows.Forms.Label();
             this.lblStatusBeras = new System.Windows.Forms.Label();
@@ -92,7 +96,7 @@ namespace AplikasiGilinganPadi
             this.SuspendLayout();
 
             // ========== FORM SETTING ==========
-            this.ClientSize = new System.Drawing.Size(580, 580);
+            this.ClientSize = new System.Drawing.Size(550, 580);
             this.Text = "📝 Catat Hasil Giling";
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -100,7 +104,6 @@ namespace AplikasiGilinganPadi
             this.MinimizeBox = false;
             this.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormHasilGiling_FormClosing);
 
             // ========== PANEL HEADER ==========
             this.panelHeader.BackColor = System.Drawing.Color.FromArgb(52, 73, 94);
@@ -133,7 +136,7 @@ namespace AplikasiGilinganPadi
             this.groupBoxInfo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxInfo.BackColor = System.Drawing.Color.White;
             this.groupBoxInfo.Location = new System.Drawing.Point(20, 20);
-            this.groupBoxInfo.Size = new System.Drawing.Size(520, 210);
+            this.groupBoxInfo.Size = new System.Drawing.Size(490, 210);
             this.groupBoxInfo.Padding = new Padding(10);
 
             // No Antrian
@@ -148,7 +151,7 @@ namespace AplikasiGilinganPadi
             this.txtNomorAntrian.Size = new System.Drawing.Size(100, 27);
             this.txtNomorAntrian.ReadOnly = true;
             this.txtNomorAntrian.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
-            this.txtNomorAntrian.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtNomorAntrian.BorderStyle = BorderStyle.FixedSingle;
 
             // Nama Petani
             this.lblNamaPetani.AutoSize = true;
@@ -162,7 +165,7 @@ namespace AplikasiGilinganPadi
             this.txtNamaPetani.Size = new System.Drawing.Size(250, 27);
             this.txtNamaPetani.ReadOnly = true;
             this.txtNamaPetani.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
-            this.txtNamaPetani.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtNamaPetani.BorderStyle = BorderStyle.FixedSingle;
 
             // Alamat
             this.lblAlamat.AutoSize = true;
@@ -176,7 +179,7 @@ namespace AplikasiGilinganPadi
             this.txtAlamat.Size = new System.Drawing.Size(350, 27);
             this.txtAlamat.ReadOnly = true;
             this.txtAlamat.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
-            this.txtAlamat.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtAlamat.BorderStyle = BorderStyle.FixedSingle;
 
             // No Telepon
             this.lblNoTelepon.AutoSize = true;
@@ -190,7 +193,7 @@ namespace AplikasiGilinganPadi
             this.txtNoTelepon.Size = new System.Drawing.Size(150, 27);
             this.txtNoTelepon.ReadOnly = true;
             this.txtNoTelepon.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
-            this.txtNoTelepon.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtNoTelepon.BorderStyle = BorderStyle.FixedSingle;
 
             // Berat Gabah
             this.lblBeratGabah.AutoSize = true;
@@ -204,7 +207,7 @@ namespace AplikasiGilinganPadi
             this.txtBeratGabah.Size = new System.Drawing.Size(100, 27);
             this.txtBeratGabah.ReadOnly = true;
             this.txtBeratGabah.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
-            this.txtBeratGabah.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtBeratGabah.BorderStyle = BorderStyle.FixedSingle;
 
             Label lblKg1 = new Label();
             lblKg1.AutoSize = true;
@@ -229,7 +232,7 @@ namespace AplikasiGilinganPadi
             this.groupBoxHasil.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxHasil.BackColor = System.Drawing.Color.White;
             this.groupBoxHasil.Location = new System.Drawing.Point(20, 245);
-            this.groupBoxHasil.Size = new System.Drawing.Size(520, 210);
+            this.groupBoxHasil.Size = new System.Drawing.Size(490, 210);
             this.groupBoxHasil.Padding = new Padding(10);
 
             // Beras Dihasilkan
@@ -245,7 +248,7 @@ namespace AplikasiGilinganPadi
             this.txtBerasDihasilkan.Size = new System.Drawing.Size(130, 32);
             this.txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
             this.txtBerasDihasilkan.TextAlign = HorizontalAlignment.Right;
-            this.txtBerasDihasilkan.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtBerasDihasilkan.BorderStyle = BorderStyle.FixedSingle;
 
             Label lblKg2 = new Label();
             lblKg2.AutoSize = true;
@@ -253,14 +256,14 @@ namespace AplikasiGilinganPadi
             lblKg2.Location = new System.Drawing.Point(310, 35);
             lblKg2.Text = "kg";
 
-            // Info Batas Beras
+            // INFO BATAS BERAS
             this.lblInfoBatasBeras.AutoSize = true;
             this.lblInfoBatasBeras.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblInfoBatasBeras.ForeColor = System.Drawing.Color.Gray;
             this.lblInfoBatasBeras.Location = new System.Drawing.Point(310, 42);
             this.lblInfoBatasBeras.Text = "Max: 0 kg";
 
-            // Status Beras
+            // STATUS BERAS
             this.lblStatusBeras.AutoSize = true;
             this.lblStatusBeras.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblStatusBeras.Location = new System.Drawing.Point(400, 38);
@@ -278,7 +281,7 @@ namespace AplikasiGilinganPadi
             this.txtDedak.Size = new System.Drawing.Size(130, 32);
             this.txtDedak.BackColor = System.Drawing.Color.White;
             this.txtDedak.TextAlign = HorizontalAlignment.Right;
-            this.txtDedak.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtDedak.BorderStyle = BorderStyle.FixedSingle;
 
             Label lblKg3 = new Label();
             lblKg3.AutoSize = true;
@@ -286,19 +289,19 @@ namespace AplikasiGilinganPadi
             lblKg3.Location = new System.Drawing.Point(310, 85);
             lblKg3.Text = "kg";
 
-            // Info Batas Dedak
+            // INFO BATAS DEDAK
             this.lblInfoBatasDedak.AutoSize = true;
             this.lblInfoBatasDedak.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblInfoBatasDedak.ForeColor = System.Drawing.Color.Gray;
             this.lblInfoBatasDedak.Location = new System.Drawing.Point(310, 92);
             this.lblInfoBatasDedak.Text = "Max: 0 kg";
 
-            // Status Dedak
+            // STATUS DEDAK
             this.lblStatusDedak.AutoSize = true;
             this.lblStatusDedak.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblStatusDedak.Location = new System.Drawing.Point(400, 88);
 
-            // Info Maksimal Total
+            // Label Info Maksimal Total
             this.lblInfoMaksimal.AutoSize = true;
             this.lblInfoMaksimal.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Italic);
             this.lblInfoMaksimal.ForeColor = System.Drawing.Color.FromArgb(231, 76, 60);
@@ -306,7 +309,7 @@ namespace AplikasiGilinganPadi
             this.lblInfoMaksimal.Size = new System.Drawing.Size(200, 19);
             this.lblInfoMaksimal.Text = "⚠️ Maksimal total beras + dedak = 0 kg";
 
-            // Status Total
+            // STATUS TOTAL
             this.lblStatusTotal.AutoSize = true;
             this.lblStatusTotal.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblStatusTotal.Location = new System.Drawing.Point(15, 160);
@@ -338,7 +341,7 @@ namespace AplikasiGilinganPadi
             this.btnSimpan.FlatStyle = FlatStyle.Flat;
             this.btnSimpan.ForeColor = System.Drawing.Color.White;
             this.btnSimpan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnSimpan.Location = new System.Drawing.Point(180, 12);
+            this.btnSimpan.Location = new System.Drawing.Point(160, 12);
             this.btnSimpan.Size = new System.Drawing.Size(130, 40);
             this.btnSimpan.Text = "💾 Simpan";
             this.btnSimpan.UseVisualStyleBackColor = false;
@@ -348,7 +351,7 @@ namespace AplikasiGilinganPadi
             this.btnBatal.FlatStyle = FlatStyle.Flat;
             this.btnBatal.ForeColor = System.Drawing.Color.White;
             this.btnBatal.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnBatal.Location = new System.Drawing.Point(330, 12);
+            this.btnBatal.Location = new System.Drawing.Point(310, 12);
             this.btnBatal.Size = new System.Drawing.Size(130, 40);
             this.btnBatal.Text = "❌ Batal";
             this.btnBatal.UseVisualStyleBackColor = false;
@@ -365,10 +368,13 @@ namespace AplikasiGilinganPadi
             // ========== EVENT HANDLER ==========
             this.btnSimpan.Click += new System.EventHandler(this.btnSimpan_Click);
             this.btnBatal.Click += new System.EventHandler(this.btnBatal_Click);
-            this.txtBerasDihasilkan.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtBerasDihasilkan_KeyPress);
-            this.txtDedak.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDedak_KeyPress);
+            this.txtBerasDihasilkan.KeyPress += new KeyPressEventHandler(this.txtBerasDihasilkan_KeyPress);
+            this.txtDedak.KeyPress += new KeyPressEventHandler(this.txtDedak_KeyPress);
             this.txtBerasDihasilkan.TextChanged += new System.EventHandler(this.txtBerasDihasilkan_TextChanged);
             this.txtDedak.TextChanged += new System.EventHandler(this.txtDedak_TextChanged);
+            this.txtBerasDihasilkan.KeyDown += new KeyEventHandler(this.txtBerasDihasilkan_KeyDown);
+            this.txtDedak.KeyDown += new KeyEventHandler(this.txtDedak_KeyDown);
+            this.FormClosing += new FormClosingEventHandler(this.FormHasilGiling_FormClosing);
 
             this.panelHeader.ResumeLayout(false);
             this.panelHeader.PerformLayout();
