@@ -52,6 +52,12 @@
     <Compile Include="FormAntrian.Designer.cs">
       <DependentUpon>FormAntrian.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormHasilGiling.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormHasilGiling.Designer.cs">
+      <DependentUpon>FormHasilGiling.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormUtama.cs">
       <SubType>Form</SubType>
     </Compile>
