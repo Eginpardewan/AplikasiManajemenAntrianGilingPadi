@@ -9,18 +9,19 @@ namespace AplikasiGilinganPadi
     public partial class FormAntrian : Form
     {
         private SqlConnection conn;
-        private string connectionString;
+        private string connectionString;  // TAMBAHKAN
         private int idAntrian;
         private bool isEdit = false;
         private DateTime tanggalAwal;
         private DateTime minDate;
         private DateTime maxDate;
 
+        // ========== PERBAIKAN CONSTRUCTOR ==========
         public FormAntrian(string connString, int id)
         {
             InitializeComponent();
-            connectionString = connString;
-            conn = new SqlConnection(connectionString);
+            connectionString = connString;  // Simpan connection string
+            conn = new SqlConnection(connectionString);  // Buat koneksi baru
             idAntrian = id;
             isEdit = (id > 0);
 
@@ -36,16 +37,15 @@ namespace AplikasiGilinganPadi
                 btnSimpan.Text = "💾 Simpan";
                 GenerateNomorAntrian();
 
-                // Set range tanggal untuk tambah (hari ini s/d H+7)
+                // Hanya set value, tidak set MinDate/MaxDate agar semua tanggal terlihat
+                dtpTanggal.Value = DateTime.Today;
+
+                // Simpan range untuk validasi
                 minDate = DateTime.Today;
                 maxDate = DateTime.Today.AddDays(7);
-                dtpTanggal.MinDate = minDate;
-                dtpTanggal.MaxDate = maxDate;
-                dtpTanggal.Value = DateTime.Today;
             }
         }
 
-        // ========== GENERATE NOMOR ANTRIAN OTOMATIS ==========
         private void GenerateNomorAntrian()
         {
             try
@@ -67,7 +67,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== LOAD DATA UNTUK EDIT ==========
         private void LoadData()
         {
             try
@@ -91,11 +90,9 @@ namespace AplikasiGilinganPadi
                     dtpTanggal.Value = tanggalAwal;
                     cmbStatus.Text = reader["status"].ToString();
 
-                    // Set range tanggal untuk edit (tanggal awal s/d H+7)
+                    // Simpan range untuk validasi (tidak set MinDate/MaxDate agar semua tanggal terlihat)
                     minDate = tanggalAwal;
                     maxDate = tanggalAwal.AddDays(7);
-                    dtpTanggal.MinDate = minDate;
-                    dtpTanggal.MaxDate = maxDate;
                 }
                 reader.Close();
                 conn.Close();
@@ -112,31 +109,58 @@ namespace AplikasiGilinganPadi
         {
             DateTime selectedDate = dtpTanggal.Value.Date;
 
-            if (selectedDate < minDate)
+            if (!isEdit) // Mode Tambah
             {
-                MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!",
-                    "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                dtpTanggal.Value = minDate;
-                return false;
-            }
+                if (selectedDate < minDate)
+                {
+                    MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!\n\n" +
+                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
+                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTanggal.Value = minDate;
+                    return false;
+                }
 
-            if (selectedDate > maxDate)
+                if (selectedDate > maxDate)
+                {
+                    MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!\n\n" +
+                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
+                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTanggal.Value = maxDate;
+                    return false;
+                }
+            }
+            else // Mode Edit
             {
-                MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!",
-                    "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                dtpTanggal.Value = maxDate;
-                return false;
+                if (selectedDate < minDate)
+                {
+                    MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!\n\n" +
+                        $"Tanggal awal antrian: {tanggalAwal:dd/MM/yyyy}\n" +
+                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
+                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTanggal.Value = minDate;
+                    return false;
+                }
+
+                if (selectedDate > maxDate)
+                {
+                    MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!\n\n" +
+                        $"Tanggal awal antrian: {tanggalAwal:dd/MM/yyyy}\n" +
+                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
+                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    dtpTanggal.Value = maxDate;
+                    return false;
+                }
             }
 
             return true;
         }
 
-        // ========== TOMBOL SIMPAN ==========
+        // ========== VALIDASI DAN SIMPAN DATA ==========
         private void btnSimpan_Click(object sender, EventArgs e)
         {
             // ========== VALIDASI SEMUA FIELD ==========
 
-            // Validasi Nama Petani
+            // 1. Validasi Nama Petani
             if (string.IsNullOrWhiteSpace(txtNamaPetani.Text))
             {
                 MessageBox.Show("❌ Nama Petani harus diisi!", "Validasi",
@@ -145,7 +169,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Alamat
+            // 2. Validasi Alamat (WAJIB DIISI)
             if (string.IsNullOrWhiteSpace(txtAlamat.Text))
             {
                 MessageBox.Show("❌ Alamat harus diisi!", "Validasi",
@@ -154,7 +178,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi No Telepon
+            // 3. Validasi No Telepon (WAJIB DIISI)
             if (string.IsNullOrWhiteSpace(txtNoTelepon.Text))
             {
                 MessageBox.Show("❌ No Telepon harus diisi!", "Validasi",
@@ -163,7 +187,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Format No Telepon (10-15 digit angka)
+            // 4. Validasi Format No Telepon (hanya angka, 10-15 digit)
             string noTelepon = txtNoTelepon.Text.Trim();
             if (!Regex.IsMatch(noTelepon, @"^[0-9]{10,15}$"))
             {
@@ -173,7 +197,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Berat Gabah
+            // 5. Validasi Berat Gabah
             if (string.IsNullOrWhiteSpace(txtBeratGabah.Text))
             {
                 MessageBox.Show("❌ Berat Gabah harus diisi!", "Validasi",
@@ -182,7 +206,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Format Berat Gabah
+            // 6. Validasi Format Berat Gabah (harus angka)
             decimal beratGabah;
             if (!decimal.TryParse(txtBeratGabah.Text, out beratGabah))
             {
@@ -192,7 +216,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Berat Gabah > 0
+            // 7. Validasi Berat Gabah tidak boleh negatif atau nol
             if (beratGabah <= 0)
             {
                 MessageBox.Show("❌ Berat Gabah harus lebih dari 0 kg!",
@@ -201,7 +225,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Nama Petani minimal 3 karakter
+            // 8. Validasi Nama Petani (minimal 3 karakter)
             if (txtNamaPetani.Text.Trim().Length < 3)
             {
                 MessageBox.Show("❌ Nama Petani minimal 3 karakter!",
@@ -210,7 +234,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Alamat minimal 5 karakter
+            // 9. Validasi Alamat (minimal 5 karakter)
             if (txtAlamat.Text.Trim().Length < 5)
             {
                 MessageBox.Show("❌ Alamat minimal 5 karakter!",
@@ -219,7 +243,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Tanggal
+            // 10. Validasi Tanggal
             if (!ValidateTanggal())
             {
                 return;
@@ -232,7 +256,7 @@ namespace AplikasiGilinganPadi
 
                 if (isEdit)
                 {
-                    // UPDATE DATA
+                    // Update
                     string query = @"UPDATE Antrian SET 
                                     nama_petani = @nama, 
                                     alamat = @alamat, 
@@ -257,7 +281,7 @@ namespace AplikasiGilinganPadi
                 }
                 else
                 {
-                    // INSERT DATA BARU
+                    // Insert
                     string query = @"INSERT INTO Antrian 
                                     (nomor_antrian, nama_petani, alamat, no_telepon, berat_gabah, tanggal_antrian, status) 
                                     VALUES 
@@ -327,7 +351,7 @@ namespace AplikasiGilinganPadi
         // ========== VALIDASI INPUT NAMA TIDAK BOLEH ANGKA ==========
         private void txtNamaPetani_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar) && e.KeyChar != '\b')
             {
                 e.Handled = true;
             }
