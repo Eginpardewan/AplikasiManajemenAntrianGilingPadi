@@ -1,6 +1,6 @@
-﻿namespace Giling_Padi
+﻿namespace AplikasiGilinganPadi
 {
-    partial class Form1
+    partial class FormLogin
     {
         private System.ComponentModel.IContainer components = null;
 

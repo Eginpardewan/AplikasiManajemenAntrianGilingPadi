@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace Giling_Padi
+namespace AplikasiGilinganPadi
 {
     partial class FormUtama
     {
