@@ -9,19 +9,18 @@ namespace AplikasiGilinganPadi
     public partial class FormAntrian : Form
     {
         private SqlConnection conn;
-        private string connectionString;  // TAMBAHKAN
+        private string connectionString;
         private int idAntrian;
         private bool isEdit = false;
         private DateTime tanggalAwal;
         private DateTime minDate;
         private DateTime maxDate;
 
-        // ========== PERBAIKAN CONSTRUCTOR ==========
         public FormAntrian(string connString, int id)
         {
             InitializeComponent();
-            connectionString = connString;  // Simpan connection string
-            conn = new SqlConnection(connectionString);  // Buat koneksi baru
+            connectionString = connString;
+            conn = new SqlConnection(connectionString);
             idAntrian = id;
             isEdit = (id > 0);
 
@@ -37,10 +36,10 @@ namespace AplikasiGilinganPadi
                 btnSimpan.Text = "💾 Simpan";
                 GenerateNomorAntrian();
 
-                // Hanya set value, tidak set MinDate/MaxDate agar semua tanggal terlihat
+                // Hanya set value, TIDAK set MinDate/MaxDate agar semua tanggal terlihat
                 dtpTanggal.Value = DateTime.Today;
 
-                // Simpan range untuk validasi
+                // Simpan range untuk validasi (tidak mempengaruhi tampilan kalender)
                 minDate = DateTime.Today;
                 maxDate = DateTime.Today.AddDays(7);
             }
@@ -90,7 +89,7 @@ namespace AplikasiGilinganPadi
                     dtpTanggal.Value = tanggalAwal;
                     cmbStatus.Text = reader["status"].ToString();
 
-                    // Simpan range untuk validasi (tidak set MinDate/MaxDate agar semua tanggal terlihat)
+                    // Simpan range untuk validasi (tidak mempengaruhi tampilan kalender)
                     minDate = tanggalAwal;
                     maxDate = tanggalAwal.AddDays(7);
                 }
@@ -104,7 +103,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== VALIDASI TANGGAL ==========
+        // ========== VALIDASI TANGGAL (MANUAL, TIDAK MEMPENGARUHI TAMPILAN) ==========
         private bool ValidateTanggal()
         {
             DateTime selectedDate = dtpTanggal.Value.Date;
@@ -155,12 +154,11 @@ namespace AplikasiGilinganPadi
             return true;
         }
 
-        // ========== VALIDASI DAN SIMPAN DATA ==========
         private void btnSimpan_Click(object sender, EventArgs e)
         {
             // ========== VALIDASI SEMUA FIELD ==========
 
-            // 1. Validasi Nama Petani
+            // Validasi Nama Petani
             if (string.IsNullOrWhiteSpace(txtNamaPetani.Text))
             {
                 MessageBox.Show("❌ Nama Petani harus diisi!", "Validasi",
@@ -169,7 +167,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 2. Validasi Alamat (WAJIB DIISI)
+            // Validasi Alamat
             if (string.IsNullOrWhiteSpace(txtAlamat.Text))
             {
                 MessageBox.Show("❌ Alamat harus diisi!", "Validasi",
@@ -178,7 +176,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 3. Validasi No Telepon (WAJIB DIISI)
+            // Validasi No Telepon
             if (string.IsNullOrWhiteSpace(txtNoTelepon.Text))
             {
                 MessageBox.Show("❌ No Telepon harus diisi!", "Validasi",
@@ -187,7 +185,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 4. Validasi Format No Telepon (hanya angka, 10-15 digit)
+            // Validasi Format No Telepon
             string noTelepon = txtNoTelepon.Text.Trim();
             if (!Regex.IsMatch(noTelepon, @"^[0-9]{10,15}$"))
             {
@@ -197,7 +195,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 5. Validasi Berat Gabah
+            // Validasi Berat Gabah
             if (string.IsNullOrWhiteSpace(txtBeratGabah.Text))
             {
                 MessageBox.Show("❌ Berat Gabah harus diisi!", "Validasi",
@@ -206,7 +204,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 6. Validasi Format Berat Gabah (harus angka)
+            // Validasi Format Berat Gabah
             decimal beratGabah;
             if (!decimal.TryParse(txtBeratGabah.Text, out beratGabah))
             {
@@ -216,7 +214,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 7. Validasi Berat Gabah tidak boleh negatif atau nol
+            // Validasi Berat Gabah > 0
             if (beratGabah <= 0)
             {
                 MessageBox.Show("❌ Berat Gabah harus lebih dari 0 kg!",
@@ -225,7 +223,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 8. Validasi Nama Petani (minimal 3 karakter)
+            // Validasi Nama Petani minimal 3 karakter
             if (txtNamaPetani.Text.Trim().Length < 3)
             {
                 MessageBox.Show("❌ Nama Petani minimal 3 karakter!",
@@ -234,7 +232,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 9. Validasi Alamat (minimal 5 karakter)
+            // Validasi Alamat minimal 5 karakter
             if (txtAlamat.Text.Trim().Length < 5)
             {
                 MessageBox.Show("❌ Alamat minimal 5 karakter!",
@@ -243,7 +241,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // 10. Validasi Tanggal
+            // ========== VALIDASI TANGGAL (MANUAL) ==========
             if (!ValidateTanggal())
             {
                 return;
@@ -256,7 +254,7 @@ namespace AplikasiGilinganPadi
 
                 if (isEdit)
                 {
-                    // Update
+                    // UPDATE
                     string query = @"UPDATE Antrian SET 
                                     nama_petani = @nama, 
                                     alamat = @alamat, 
@@ -281,7 +279,7 @@ namespace AplikasiGilinganPadi
                 }
                 else
                 {
-                    // Insert
+                    // INSERT
                     string query = @"INSERT INTO Antrian 
                                     (nomor_antrian, nama_petani, alamat, no_telepon, berat_gabah, tanggal_antrian, status) 
                                     VALUES 
@@ -314,7 +312,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== TOMBOL BATAL ==========
         private void btnBatal_Click(object sender, EventArgs e)
         {
             DialogResult confirm = MessageBox.Show("Yakin ingin membatalkan?",
@@ -326,7 +323,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== VALIDASI INPUT HANYA ANGKA UNTUK NO TELEPON ==========
         private void txtNoTelepon_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
@@ -335,7 +331,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== VALIDASI INPUT HANYA ANGKA DAN TITIK UNTUK BERAT GABAH ==========
         private void txtBeratGabah_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
@@ -348,16 +343,14 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== VALIDASI INPUT NAMA TIDAK BOLEH ANGKA ==========
         private void txtNamaPetani_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar) && e.KeyChar != '\b')
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
             {
                 e.Handled = true;
             }
         }
 
-        // ========== FORM CLOSING ==========
         private void FormAntrian_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)
