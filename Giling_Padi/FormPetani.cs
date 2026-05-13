@@ -12,12 +12,19 @@ namespace AplikasiGilinganPadi
         private int idPetani;
         private bool isEdit = false;
 
+        // BindingSource untuk navigasi data
+        private BindingSource bsPetani;
+        private DataTable dtPetani;
+
         public FormPetani(string connString, int id = 0)
         {
             InitializeComponent();
             this.connectionString = connString;
             this.idPetani = id;
             this.isEdit = (id > 0);
+
+            // Inisialisasi BindingSource
+            bsPetani = new BindingSource();
 
             if (isEdit)
             {
@@ -32,6 +39,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== LOAD DATA ==========
         private void LoadData()
         {
             try
@@ -59,8 +67,105 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== TOMBOL TEST SQL INJECTION ==========
+        private void btnTestInjection_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtNama.Text))
+            {
+                MessageBox.Show("❌ Masukkan Nama Petani untuk uji injection!\nContoh: ' OR 1=1 --",
+                    "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // ⚠️ RENTAN SQL INJECTION! ⚠️
+                    string query = "UPDATE Petani SET alamat = 'HACKED BY SQL INJECTION' WHERE nama = '" + txtNama.Text + "'";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        int result = cmd.ExecuteNonQuery();
+                        MessageBox.Show(result + " baris terupdate! Data mungkin telah berubah!\n\n" +
+                            "Cek tab Data Petani di Form Utama untuk melihat perubahan.",
+                            "⚠️ Hasil SQL Injection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // ========== RESET DATA (HANYA PETANI - TIDAK MENGHAPUS ANTRIAN) ==========
+        private void btnResetData_Click(object sender, EventArgs e)
+        {
+            DialogResult confirm = MessageBox.Show(
+                "⚠️ PERINGATAN!\n\n" +
+                "Reset data akan menghapus SEMUA data PETANI dan mengembalikannya ke data awal.\n\n" +
+                "Data ANTRIAN dan HASIL GILING akan TETAP ADA (tidak dihapus).\n\n" +
+                "Apakah Anda yakin?",
+                "Konfirmasi Reset Data Petani",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                try
+                {
+                    using (SqlConnection conn = new SqlConnection(connectionString))
+                    {
+                        conn.Open();
+
+                        // Hanya hapus data Petani (TIDAK menyentuh Antrian dan HasilGiling)
+                        string query = @"
+                            -- Hapus semua data petani
+                            DELETE FROM Petani;
+                            
+                            -- Reset identity petani ke 0 agar id dimulai dari 1 lagi
+                            DBCC CHECKIDENT ('Petani', RESEED, 0);
+                            
+                            -- Insert data default petani (5 data awal)
+                            INSERT INTO Petani (nama, alamat, no_telepon) VALUES
+                            ('Ahmad Supriyadi', 'Ds. Sukamakmur RT 01 RW 02', '081234567890'),
+                            ('Siti Aminah', 'Ds. Sukamakmur RT 03 RW 02', '081234567891'),
+                            ('Joko Widodo', 'Ds. Sukamaju RT 02 RW 01', '081234567892'),
+                            ('Umi Kalsum', 'Ds. Sukamakmur RT 02 RW 01', '081234567893'),
+                            ('Bambang Suprapto', 'Ds. Sukamaju RT 05 RW 02', '081234567894');";
+
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        MessageBox.Show("✅ Data PETANI berhasil direset ke kondisi awal!\n\n" +
+                            "Data Antrian dan Hasil Giling tetap ada.\n\n" +
+                            "Data Petani: 5 data",
+                            "Reset Berhasil",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("❌ Reset gagal: " + ex.Message, "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        // ========== VALIDASI INPUT ==========
         private bool ValidateInput()
         {
+            // Validasi Nama
             if (string.IsNullOrWhiteSpace(txtNama.Text))
             {
                 MessageBox.Show("❌ Nama Petani harus diisi!", "Validasi",
@@ -77,6 +182,7 @@ namespace AplikasiGilinganPadi
                 return false;
             }
 
+            // Validasi Alamat
             if (string.IsNullOrWhiteSpace(txtAlamat.Text))
             {
                 MessageBox.Show("❌ Alamat harus diisi!", "Validasi",
@@ -93,6 +199,7 @@ namespace AplikasiGilinganPadi
                 return false;
             }
 
+            // Validasi No Telepon
             if (string.IsNullOrWhiteSpace(txtNoTelepon.Text))
             {
                 MessageBox.Show("❌ No Telepon harus diisi!", "Validasi",
@@ -113,6 +220,7 @@ namespace AplikasiGilinganPadi
             return true;
         }
 
+        // ========== SIMPAN (Menggunakan Stored Procedure) ==========
         private void btnSimpan_Click(object sender, EventArgs e)
         {
             if (!ValidateInput())
@@ -126,6 +234,7 @@ namespace AplikasiGilinganPadi
 
                     if (isEdit)
                     {
+                        // UPDATE via Stored Procedure
                         SqlCommand cmd = new SqlCommand("sp_UpdatePetani", conn);
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@id_petani", idPetani);
@@ -139,6 +248,7 @@ namespace AplikasiGilinganPadi
                     }
                     else
                     {
+                        // INSERT via Stored Procedure
                         SqlCommand cmd = new SqlCommand("sp_InsertPetani", conn);
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@nama", txtNama.Text.Trim());
@@ -153,6 +263,12 @@ namespace AplikasiGilinganPadi
                 }
                 this.DialogResult = DialogResult.OK;
                 this.Close();
+            }
+            catch (SqlException ex)
+            {
+                // Tangani error dari stored procedure
+                MessageBox.Show("Error: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
