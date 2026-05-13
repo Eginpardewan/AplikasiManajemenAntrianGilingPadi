@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace AplikasiGilinganPadi
 {
@@ -6,23 +7,23 @@ namespace AplikasiGilinganPadi
     {
         private System.ComponentModel.IContainer components = null;
 
-        private System.Windows.Forms.Label lblNomorAntrian;
-        private System.Windows.Forms.Label lblNamaPetani;
-        private System.Windows.Forms.Label lblAlamat;
-        private System.Windows.Forms.Label lblNoTelepon;
-        private System.Windows.Forms.Label lblBeratGabah;
-        private System.Windows.Forms.Label lblTanggal;
-        private System.Windows.Forms.Label lblStatus;
-        private System.Windows.Forms.TextBox txtNomorAntrian;
-        private System.Windows.Forms.TextBox txtNamaPetani;
-        private System.Windows.Forms.TextBox txtAlamat;
-        private System.Windows.Forms.TextBox txtNoTelepon;
-        private System.Windows.Forms.TextBox txtBeratGabah;
-        private System.Windows.Forms.DateTimePicker dtpTanggal;
-        private System.Windows.Forms.ComboBox cmbStatus;
-        private System.Windows.Forms.Button btnSimpan;
-        private System.Windows.Forms.Button btnBatal;
-        private System.Windows.Forms.ToolTip toolTipInfo;
+        private Label lblNomorAntrian;
+        private Label lblNamaPetani;
+        private Label lblAlamat;
+        private Label lblNoTelepon;
+        private Label lblBeratGabah;
+        private Label lblTanggal;
+        private Label lblStatus;
+        private TextBox txtNomorAntrian;
+        private ComboBox cmbNamaPetani;
+        private TextBox txtAlamat;
+        private TextBox txtNoTelepon;
+        private TextBox txtBeratGabah;
+        private DateTimePicker dtpTanggal;
+        private ComboBox cmbStatus;
+        private Button btnSimpan;
+        private Button btnBatal;
+        private ToolTip toolTipInfo;
 
         protected override void Dispose(bool disposing)
         {
@@ -33,106 +34,108 @@ namespace AplikasiGilinganPadi
 
         private void InitializeComponent()
         {
-            this.lblNomorAntrian = new System.Windows.Forms.Label();
-            this.lblNamaPetani = new System.Windows.Forms.Label();
-            this.lblAlamat = new System.Windows.Forms.Label();
-            this.lblNoTelepon = new System.Windows.Forms.Label();
-            this.lblBeratGabah = new System.Windows.Forms.Label();
-            this.lblTanggal = new System.Windows.Forms.Label();
-            this.lblStatus = new System.Windows.Forms.Label();
-            this.txtNomorAntrian = new System.Windows.Forms.TextBox();
-            this.txtNamaPetani = new System.Windows.Forms.TextBox();
-            this.txtAlamat = new System.Windows.Forms.TextBox();
-            this.txtNoTelepon = new System.Windows.Forms.TextBox();
-            this.txtBeratGabah = new System.Windows.Forms.TextBox();
-            this.dtpTanggal = new System.Windows.Forms.DateTimePicker();
-            this.cmbStatus = new System.Windows.Forms.ComboBox();
-            this.btnSimpan = new System.Windows.Forms.Button();
-            this.btnBatal = new System.Windows.Forms.Button();
-            this.toolTipInfo = new System.Windows.Forms.ToolTip();
+            this.lblNomorAntrian = new Label();
+            this.lblNamaPetani = new Label();
+            this.lblAlamat = new Label();
+            this.lblNoTelepon = new Label();
+            this.lblBeratGabah = new Label();
+            this.lblTanggal = new Label();
+            this.lblStatus = new Label();
+            this.txtNomorAntrian = new TextBox();
+            this.cmbNamaPetani = new ComboBox();
+            this.txtAlamat = new TextBox();
+            this.txtNoTelepon = new TextBox();
+            this.txtBeratGabah = new TextBox();
+            this.dtpTanggal = new DateTimePicker();
+            this.cmbStatus = new ComboBox();
+            this.btnSimpan = new Button();
+            this.btnBatal = new Button();
+            this.toolTipInfo = new ToolTip();
             this.SuspendLayout();
 
             // ========== FORM SETTING ==========
-            this.ClientSize = new System.Drawing.Size(480, 420);
-            this.Text = "Form Antrian";
+            this.ClientSize = new System.Drawing.Size(500, 450);
+            this.Text = "📋 Form Antrian";
             this.StartPosition = FormStartPosition.CenterParent;
             this.BackColor = System.Drawing.Color.White;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormAntrian_FormClosing);
 
             // ========== NO ANTRIAN ==========
             this.lblNomorAntrian.AutoSize = true;
-            this.lblNomorAntrian.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            this.lblNomorAntrian.Location = new System.Drawing.Point(30, 30);
-            this.lblNomorAntrian.Text = "No Antrian :";
-
-            this.txtNomorAntrian.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtNomorAntrian.Location = new System.Drawing.Point(150, 27);
+            this.lblNomorAntrian.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            this.lblNomorAntrian.Location = new System.Drawing.Point(30, 25);
+            this.lblNomorAntrian.Text = "📍 No Antrian :";
+            this.txtNomorAntrian.Font = new Font("Segoe UI", 10F);
+            this.txtNomorAntrian.Location = new System.Drawing.Point(150, 22);
             this.txtNomorAntrian.Size = new System.Drawing.Size(100, 28);
             this.txtNomorAntrian.ReadOnly = true;
             this.txtNomorAntrian.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
 
-            // ========== NAMA PETANI ==========
+            // ========== NAMA PETANI (DIPERBAIKI) ==========
             this.lblNamaPetani.AutoSize = true;
-            this.lblNamaPetani.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblNamaPetani.Location = new System.Drawing.Point(30, 70);
-            this.lblNamaPetani.Text = "Nama Petani :";
+            this.lblNamaPetani.Font = new Font("Segoe UI", 9F);
+            this.lblNamaPetani.Location = new System.Drawing.Point(30, 65);
+            this.lblNamaPetani.Text = "👨‍🌾 Nama Petani :";
 
-            this.txtNamaPetani.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtNamaPetani.Location = new System.Drawing.Point(150, 67);
-            this.txtNamaPetani.Size = new System.Drawing.Size(280, 28);
+            this.cmbNamaPetani.Font = new Font("Segoe UI", 10F);
+            this.cmbNamaPetani.Location = new System.Drawing.Point(150, 62);
+            this.cmbNamaPetani.Size = new System.Drawing.Size(300, 29);
 
-            // ========== ALAMAT ==========
+            // PERBAIKAN: Gunakan DropDown (bukan DropDownList) agar AutoComplete bekerja
+            this.cmbNamaPetani.DropDownStyle = ComboBoxStyle.DropDown;
+            this.cmbNamaPetani.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            this.cmbNamaPetani.AutoCompleteSource = AutoCompleteSource.ListItems;
+            this.cmbNamaPetani.SelectedIndexChanged += new System.EventHandler(this.cmbNamaPetani_SelectedIndexChanged);
+
+            // ========== ALAMAT (READONLY, OTOMATIS TERISI) ==========
             this.lblAlamat.AutoSize = true;
-            this.lblAlamat.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblAlamat.Location = new System.Drawing.Point(30, 110);
-            this.lblAlamat.Text = "Alamat :";
+            this.lblAlamat.Font = new Font("Segoe UI", 9F);
+            this.lblAlamat.Location = new System.Drawing.Point(30, 105);
+            this.lblAlamat.Text = "🏠 Alamat :";
+            this.txtAlamat.Font = new Font("Segoe UI", 10F);
+            this.txtAlamat.Location = new System.Drawing.Point(150, 102);
+            this.txtAlamat.Size = new System.Drawing.Size(300, 28);
+            this.txtAlamat.ReadOnly = true;
+            this.txtAlamat.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
 
-            this.txtAlamat.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtAlamat.Location = new System.Drawing.Point(150, 107);
-            this.txtAlamat.Size = new System.Drawing.Size(280, 28);
-
-            // ========== NO TELEPON ==========
+            // ========== NO TELEPON (READONLY, OTOMATIS TERISI) ==========
             this.lblNoTelepon.AutoSize = true;
-            this.lblNoTelepon.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblNoTelepon.Location = new System.Drawing.Point(30, 150);
-            this.lblNoTelepon.Text = "No Telepon :";
-
-            this.txtNoTelepon.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtNoTelepon.Location = new System.Drawing.Point(150, 147);
+            this.lblNoTelepon.Font = new Font("Segoe UI", 9F);
+            this.lblNoTelepon.Location = new System.Drawing.Point(30, 145);
+            this.lblNoTelepon.Text = "📞 No Telepon :";
+            this.txtNoTelepon.Font = new Font("Segoe UI", 10F);
+            this.txtNoTelepon.Location = new System.Drawing.Point(150, 142);
             this.txtNoTelepon.Size = new System.Drawing.Size(180, 28);
+            this.txtNoTelepon.ReadOnly = true;
+            this.txtNoTelepon.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
 
             // ========== BERAT GABAH ==========
             this.lblBeratGabah.AutoSize = true;
-            this.lblBeratGabah.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblBeratGabah.Location = new System.Drawing.Point(30, 190);
-            this.lblBeratGabah.Text = "Berat Gabah :";
-
-            this.txtBeratGabah.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtBeratGabah.Location = new System.Drawing.Point(150, 187);
+            this.lblBeratGabah.Font = new Font("Segoe UI", 9F);
+            this.lblBeratGabah.Location = new System.Drawing.Point(30, 185);
+            this.lblBeratGabah.Text = "⚖️ Berat Gabah :";
+            this.txtBeratGabah.Font = new Font("Segoe UI", 10F);
+            this.txtBeratGabah.Location = new System.Drawing.Point(150, 182);
             this.txtBeratGabah.Size = new System.Drawing.Size(120, 28);
 
             Label lblKg = new Label();
             lblKg.AutoSize = true;
-            lblKg.Font = new System.Drawing.Font("Segoe UI", 9F);
-            lblKg.Location = new System.Drawing.Point(280, 190);
+            lblKg.Font = new Font("Segoe UI", 9F);
+            lblKg.Location = new System.Drawing.Point(280, 185);
             lblKg.Text = "kg";
 
-            // ========== TANGGAL (TANPA MinDate/MaxDate - SEMUA TANGGAL TERLIHAT) ==========
+            // ========== TANGGAL ==========
             this.lblTanggal.AutoSize = true;
-            this.lblTanggal.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblTanggal.Location = new System.Drawing.Point(30, 230);
-            this.lblTanggal.Text = "Tanggal :";
-
-            this.dtpTanggal.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.dtpTanggal.Location = new System.Drawing.Point(150, 227);
+            this.lblTanggal.Font = new Font("Segoe UI", 9F);
+            this.lblTanggal.Location = new System.Drawing.Point(30, 225);
+            this.lblTanggal.Text = "📅 Tanggal :";
+            this.dtpTanggal.Font = new Font("Segoe UI", 10F);
+            this.dtpTanggal.Location = new System.Drawing.Point(150, 222);
             this.dtpTanggal.Size = new System.Drawing.Size(250, 28);
             this.dtpTanggal.Format = DateTimePickerFormat.Short;
-            // TIDAK ADA MinDate dan MaxDate - semua tanggal terlihat!
 
-            // Tooltip untuk informasi
             this.toolTipInfo.SetToolTip(this.dtpTanggal,
                 "📅 Aturan Tanggal:\n" +
                 "• Tambah Antrian: Minimal hari ini, maksimal 7 hari ke depan\n" +
@@ -141,40 +144,45 @@ namespace AplikasiGilinganPadi
 
             // ========== STATUS ==========
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblStatus.Location = new System.Drawing.Point(30, 270);
-            this.lblStatus.Text = "Status :";
-
-            this.cmbStatus.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.cmbStatus.Location = new System.Drawing.Point(150, 267);
-            this.cmbStatus.Size = new System.Drawing.Size(150, 29);
+            this.lblStatus.Font = new Font("Segoe UI", 9F);
+            this.lblStatus.Location = new System.Drawing.Point(30, 265);
+            this.lblStatus.Text = "📌 Status :";
+            this.cmbStatus.Font = new Font("Segoe UI", 10F);
+            this.cmbStatus.Location = new System.Drawing.Point(150, 262);
+            this.cmbStatus.Size = new System.Drawing.Size(180, 29);
             this.cmbStatus.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbStatus.Items.AddRange(new object[] { "menunggu", "sedang diproses", "selesai" });
+            this.cmbStatus.Items.AddRange(new object[] { "menunggu", "proses", "selesai" });
 
-            // ========== BUTTON ==========
-            this.btnSimpan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            // ========== BUTTON SIMPAN ==========
+            this.btnSimpan.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             this.btnSimpan.Location = new System.Drawing.Point(150, 330);
-            this.btnSimpan.Size = new System.Drawing.Size(120, 40);
+            this.btnSimpan.Size = new System.Drawing.Size(130, 40);
             this.btnSimpan.BackColor = System.Drawing.Color.FromArgb(39, 174, 96);
             this.btnSimpan.ForeColor = System.Drawing.Color.White;
             this.btnSimpan.FlatStyle = FlatStyle.Flat;
             this.btnSimpan.Cursor = Cursors.Hand;
             this.btnSimpan.Text = "💾 Simpan";
+            this.btnSimpan.Click += new System.EventHandler(this.btnSimpan_Click);
 
-            this.btnBatal.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnBatal.Location = new System.Drawing.Point(290, 330);
-            this.btnBatal.Size = new System.Drawing.Size(120, 40);
+            // ========== BUTTON BATAL ==========
+            this.btnBatal.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            this.btnBatal.Location = new System.Drawing.Point(300, 330);
+            this.btnBatal.Size = new System.Drawing.Size(130, 40);
             this.btnBatal.BackColor = System.Drawing.Color.FromArgb(231, 76, 60);
             this.btnBatal.ForeColor = System.Drawing.Color.White;
             this.btnBatal.FlatStyle = FlatStyle.Flat;
             this.btnBatal.Cursor = Cursors.Hand;
             this.btnBatal.Text = "❌ Batal";
+            this.btnBatal.Click += new System.EventHandler(this.btnBatal_Click);
+
+            // ========== KEYPRESS EVENT ==========
+            this.txtBeratGabah.KeyPress += new KeyPressEventHandler(this.txtBeratGabah_KeyPress);
 
             // ========== ADD CONTROLS ==========
             this.Controls.Add(this.lblNomorAntrian);
             this.Controls.Add(this.txtNomorAntrian);
             this.Controls.Add(this.lblNamaPetani);
-            this.Controls.Add(this.txtNamaPetani);
+            this.Controls.Add(this.cmbNamaPetani);
             this.Controls.Add(this.lblAlamat);
             this.Controls.Add(this.txtAlamat);
             this.Controls.Add(this.lblNoTelepon);
@@ -188,13 +196,6 @@ namespace AplikasiGilinganPadi
             this.Controls.Add(this.cmbStatus);
             this.Controls.Add(this.btnSimpan);
             this.Controls.Add(this.btnBatal);
-
-            // ========== EVENT HANDLER ==========
-            this.btnSimpan.Click += new System.EventHandler(this.btnSimpan_Click);
-            this.btnBatal.Click += new System.EventHandler(this.btnBatal_Click);
-            this.txtNoTelepon.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtNoTelepon_KeyPress);
-            this.txtBeratGabah.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtBeratGabah_KeyPress);
-            this.txtNamaPetani.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtNamaPetani_KeyPress);
 
             this.ResumeLayout(false);
             this.PerformLayout();
