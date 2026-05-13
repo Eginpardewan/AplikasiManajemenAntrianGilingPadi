@@ -17,6 +17,12 @@ namespace AplikasiGilinganPadi
         private int idAdmin;
         private string namaAdmin;
 
+        // ========== BINDING SOURCE ==========
+        private BindingSource bsAntrian;
+        private BindingSource bsPetani;
+        private DataTable dtAntrian;
+        private DataTable dtPetani;
+
         public FormUtama(int idAdmin, string namaAdmin, string connString)
         {
             InitializeComponent();
@@ -26,11 +32,22 @@ namespace AplikasiGilinganPadi
 
             conn = new SqlConnection(connectionString);
 
+            // Inisialisasi BindingSource
+            bsAntrian = new BindingSource();
+            bsPetani = new BindingSource();
+
             MakeLogoCircular();
             SetWelcomeMessage(namaAdmin);
 
             SetupDataGridView();
             SetupDataGridViewPetani();
+
+            // Setup Binding Navigator (SATU UNTUK SEMUA)
+            bindingNavigator1.BindingSource = bsAntrian; // Default ke antrian
+            bindingNavigator1.Visible = true;
+
+            // Event untuk TabControl
+            tabControlMain.SelectedIndexChanged += TabControlMain_SelectedIndexChanged;
 
             LoadDataAntrian();
             LoadDataPetani();
@@ -41,6 +58,47 @@ namespace AplikasiGilinganPadi
                 panelSubmenuAntrian.Visible = false;
             if (panelSubmenuPetani != null)
                 panelSubmenuPetani.Visible = false;
+        }
+
+        // ========== EVENT KETIKA TAB BERUBAH ==========
+        private void TabControlMain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControlMain.SelectedTab == tabPageAntrian)
+            {
+                // Tab Antrian dipilih
+                bindingNavigator1.BindingSource = bsAntrian;
+                bindingNavigator1.Text = "bindingNavigator1 - Data Antrian";
+            }
+            else if (tabControlMain.SelectedTab == tabPagePetani)
+            {
+                // Tab Petani dipilih
+                bindingNavigator1.BindingSource = bsPetani;
+                bindingNavigator1.Text = "bindingNavigator1 - Data Petani";
+            }
+        }
+
+        private void SetupDataGridView()
+        {
+            dgvAntrian.DataSource = bsAntrian;
+
+            dgvAntrian.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvAntrian.MultiSelect = false;
+            dgvAntrian.ReadOnly = true;
+            dgvAntrian.AllowUserToAddRows = false;
+            dgvAntrian.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgvAntrian.RowHeadersVisible = false;
+        }
+
+        private void SetupDataGridViewPetani()
+        {
+            dgvPetani.DataSource = bsPetani;
+
+            dgvPetani.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvPetani.MultiSelect = false;
+            dgvPetani.ReadOnly = true;
+            dgvPetani.AllowUserToAddRows = false;
+            dgvPetani.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgvPetani.RowHeadersVisible = false;
         }
 
         private void MakeLogoCircular()
@@ -171,26 +229,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        private void SetupDataGridView()
-        {
-            dgvAntrian.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvAntrian.MultiSelect = false;
-            dgvAntrian.ReadOnly = true;
-            dgvAntrian.AllowUserToAddRows = false;
-            dgvAntrian.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-            dgvAntrian.RowHeadersVisible = false;
-        }
-
-        private void SetupDataGridViewPetani()
-        {
-            dgvPetani.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvPetani.MultiSelect = false;
-            dgvPetani.ReadOnly = true;
-            dgvPetani.AllowUserToAddRows = false;
-            dgvPetani.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-            dgvPetani.RowHeadersVisible = false;
-        }
-
         private void LoadDataAntrian()
         {
             try
@@ -212,10 +250,10 @@ namespace AplikasiGilinganPadi
                                 ORDER BY a.nomor_antrian";
 
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+                dtAntrian = new DataTable();
+                da.Fill(dtAntrian);
 
-                dgvAntrian.DataSource = dt;
+                bsAntrian.DataSource = dtAntrian;
 
                 if (dgvAntrian.Columns["id_antrian"] != null)
                     dgvAntrian.Columns["id_antrian"].Visible = false;
@@ -254,10 +292,10 @@ namespace AplikasiGilinganPadi
 
                 string query = "SELECT id_petani, nama, alamat, no_telepon, created_at FROM Petani ORDER BY nama";
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+                dtPetani = new DataTable();
+                da.Fill(dtPetani);
 
-                dgvPetani.DataSource = dt;
+                bsPetani.DataSource = dtPetani;
 
                 if (dgvPetani.Columns["id_petani"] != null)
                     dgvPetani.Columns["id_petani"].Visible = false;
@@ -282,18 +320,24 @@ namespace AplikasiGilinganPadi
         private void btnTambahPetani_Click(object sender, EventArgs e)
         {
             FormPetani formPetani = new FormPetani(connectionString, 0);
-            formPetani.ShowDialog();
-            LoadDataPetani();
+            if (formPetani.ShowDialog() == DialogResult.OK)
+            {
+                LoadDataPetani();
+            }
         }
 
         private void btnEditPetani_Click(object sender, EventArgs e)
         {
-            if (dgvPetani.SelectedRows.Count > 0)
+            if (bsPetani.Current != null)
             {
-                int idPetani = Convert.ToInt32(dgvPetani.SelectedRows[0].Cells["id_petani"].Value);
+                DataRowView currentRow = (DataRowView)bsPetani.Current;
+                int idPetani = Convert.ToInt32(currentRow["id_petani"]);
+
                 FormPetani formPetani = new FormPetani(connectionString, idPetani);
-                formPetani.ShowDialog();
-                LoadDataPetani();
+                if (formPetani.ShowDialog() == DialogResult.OK)
+                {
+                    LoadDataPetani();
+                }
             }
             else
             {
@@ -304,10 +348,11 @@ namespace AplikasiGilinganPadi
 
         private void btnHapusPetani_Click(object sender, EventArgs e)
         {
-            if (dgvPetani.SelectedRows.Count > 0)
+            if (bsPetani.Current != null)
             {
-                int idPetani = Convert.ToInt32(dgvPetani.SelectedRows[0].Cells["id_petani"].Value);
-                string namaPetani = dgvPetani.SelectedRows[0].Cells["nama"].Value.ToString();
+                DataRowView currentRow = (DataRowView)bsPetani.Current;
+                int idPetani = Convert.ToInt32(currentRow["id_petani"]);
+                string namaPetani = currentRow["nama"].ToString();
 
                 DialogResult confirm = MessageBox.Show(
                     $"Yakin ingin menghapus petani '{namaPetani}'?\n\nData petani yang memiliki antrian tidak dapat dihapus!",
@@ -441,7 +486,7 @@ namespace AplikasiGilinganPadi
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
-                dgvAntrian.DataSource = dt;
+                bsAntrian.DataSource = dt;
 
                 if (dgvAntrian.Columns["id_antrian"] != null)
                     dgvAntrian.Columns["id_antrian"].Visible = false;
@@ -494,7 +539,7 @@ namespace AplikasiGilinganPadi
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
-                dgvPetani.DataSource = dt;
+                bsPetani.DataSource = dt;
 
                 if (dgvPetani.Columns["id_petani"] != null)
                     dgvPetani.Columns["id_petani"].Visible = false;
@@ -514,44 +559,109 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== BINDING NAVIGATOR EVENT HANDLER (SATU UNTUK SEMUA) ==========
+        private void bindingNavigatorAddNewItem_Click(object sender, EventArgs e)
+        {
+            // Cek tab mana yang aktif
+            if (tabControlMain.SelectedTab == tabPageAntrian)
+            {
+                btnTambahAntrian_Click(sender, e);
+            }
+            else if (tabControlMain.SelectedTab == tabPagePetani)
+            {
+                btnTambahPetani_Click(sender, e);
+            }
+        }
+
+        private void bindingNavigatorDeleteItem_Click(object sender, EventArgs e)
+        {
+            // Cek tab mana yang aktif
+            if (tabControlMain.SelectedTab == tabPageAntrian)
+            {
+                if (bsAntrian.Current != null)
+                {
+                    DialogResult confirm = MessageBox.Show(
+                        "⚠️ Yakin ingin menghapus data antrian yang dipilih?\n\nData yang dihapus tidak dapat dikembalikan!",
+                        "Konfirmasi Hapus",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (confirm == DialogResult.Yes)
+                    {
+                        btnHapusAntrian_Click(sender, e);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("❌ Tidak ada data antrian yang dipilih untuk dihapus!",
+                        "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else if (tabControlMain.SelectedTab == tabPagePetani)
+            {
+                if (bsPetani.Current != null)
+                {
+                    DialogResult confirm = MessageBox.Show(
+                        "⚠️ Yakin ingin menghapus data petani yang dipilih?\n\nData yang dihapus tidak dapat dikembalikan!",
+                        "Konfirmasi Hapus Petani",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (confirm == DialogResult.Yes)
+                    {
+                        btnHapusPetani_Click(sender, e);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("❌ Tidak ada data petani yang dipilih untuk dihapus!",
+                        "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
         private void btnTambahAntrian_Click(object sender, EventArgs e)
         {
             FormAntrian formAntrian = new FormAntrian(connectionString, 0);
-            formAntrian.ShowDialog();
-            LoadDataAntrian();
+            if (formAntrian.ShowDialog() == DialogResult.OK)
+            {
+                LoadDataAntrian();
+            }
         }
 
         private void btnEditAntrian_Click(object sender, EventArgs e)
         {
-            if (dgvAntrian.SelectedRows.Count > 0)
+            if (bsAntrian.Current != null)
             {
-                int idAntrian = Convert.ToInt32(dgvAntrian.SelectedRows[0].Cells["id_antrian"].Value);
-                string statusLama = dgvAntrian.SelectedRows[0].Cells["status"].Value.ToString();
+                DataRowView currentRow = (DataRowView)bsAntrian.Current;
+                int idAntrian = Convert.ToInt32(currentRow["id_antrian"]);
+                string statusLama = currentRow["status"].ToString();
 
                 FormAntrian formAntrian = new FormAntrian(connectionString, idAntrian);
-                formAntrian.ShowDialog();
-
-                LoadDataAntrian();
-
-                string statusBaru = "";
-                try
+                if (formAntrian.ShowDialog() == DialogResult.OK)
                 {
-                    if (conn.State == ConnectionState.Closed)
-                        conn.Open();
-                    string queryStatus = "SELECT status FROM Antrian WHERE id_antrian = @id";
-                    SqlCommand cmdStatus = new SqlCommand(queryStatus, conn);
-                    cmdStatus.Parameters.AddWithValue("@id", idAntrian);
-                    statusBaru = cmdStatus.ExecuteScalar()?.ToString();
-                    conn.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error ambil status: " + ex.Message);
-                }
+                    LoadDataAntrian();
 
-                if (statusBaru == "selesai" && statusLama != "selesai")
-                {
-                    CekDanBukaFormHasilGiling(idAntrian);
+                    string statusBaru = "";
+                    try
+                    {
+                        if (conn.State == ConnectionState.Closed)
+                            conn.Open();
+                        string queryStatus = "SELECT status FROM Antrian WHERE id_antrian = @id";
+                        SqlCommand cmdStatus = new SqlCommand(queryStatus, conn);
+                        cmdStatus.Parameters.AddWithValue("@id", idAntrian);
+                        statusBaru = cmdStatus.ExecuteScalar()?.ToString();
+                        conn.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error ambil status: " + ex.Message);
+                    }
+
+                    if (statusBaru == "selesai" && statusLama != "selesai")
+                    {
+                        CekDanBukaFormHasilGiling(idAntrian);
+                    }
                 }
             }
             else
@@ -563,11 +673,12 @@ namespace AplikasiGilinganPadi
 
         private void btnHapusAntrian_Click(object sender, EventArgs e)
         {
-            if (dgvAntrian.SelectedRows.Count > 0)
+            if (bsAntrian.Current != null)
             {
-                int idAntrian = Convert.ToInt32(dgvAntrian.SelectedRows[0].Cells["id_antrian"].Value);
-                string namaPetani = dgvAntrian.SelectedRows[0].Cells["nama_petani"].Value.ToString();
-                string nomorAntrian = dgvAntrian.SelectedRows[0].Cells["nomor_antrian"].Value.ToString();
+                DataRowView currentRow = (DataRowView)bsAntrian.Current;
+                int idAntrian = Convert.ToInt32(currentRow["id_antrian"]);
+                string namaPetani = currentRow["nama_petani"].ToString();
+                string nomorAntrian = currentRow["nomor_antrian"].ToString();
 
                 DialogResult confirm = MessageBox.Show(
                     $"Yakin ingin menghapus antrian atas nama '{namaPetani}' (No. {nomorAntrian})?\n\nData yang dihapus tidak dapat dikembalikan!",
@@ -622,11 +733,12 @@ namespace AplikasiGilinganPadi
 
         private void btnProsesGiling_Click(object sender, EventArgs e)
         {
-            if (dgvAntrian.SelectedRows.Count > 0)
+            if (bsAntrian.Current != null)
             {
-                int idAntrian = Convert.ToInt32(dgvAntrian.SelectedRows[0].Cells["id_antrian"].Value);
-                string statusSaatIni = dgvAntrian.SelectedRows[0].Cells["status"].Value.ToString();
-                string namaPetani = dgvAntrian.SelectedRows[0].Cells["nama_petani"].Value.ToString();
+                DataRowView currentRow = (DataRowView)bsAntrian.Current;
+                int idAntrian = Convert.ToInt32(currentRow["id_antrian"]);
+                string statusSaatIni = currentRow["status"].ToString();
+                string namaPetani = currentRow["nama_petani"].ToString();
 
                 if (statusSaatIni == "menunggu")
                 {
@@ -810,10 +922,11 @@ namespace AplikasiGilinganPadi
 
         private void btnCatatHasil_Click(object sender, EventArgs e)
         {
-            if (dgvAntrian.SelectedRows.Count > 0)
+            if (bsAntrian.Current != null)
             {
-                int idAntrian = Convert.ToInt32(dgvAntrian.SelectedRows[0].Cells["id_antrian"].Value);
-                string status = dgvAntrian.SelectedRows[0].Cells["status"].Value.ToString();
+                DataRowView currentRow = (DataRowView)bsAntrian.Current;
+                int idAntrian = Convert.ToInt32(currentRow["id_antrian"]);
+                string status = currentRow["status"].ToString();
 
                 if (status != "selesai")
                 {
@@ -857,6 +970,7 @@ namespace AplikasiGilinganPadi
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadDataAntrian();
+            LoadDataPetani();
             txtSearch.Clear();
             txtSearchPetani.Clear();
             MessageBox.Show("Data berhasil direfresh!", "Info",
@@ -883,10 +997,11 @@ namespace AplikasiGilinganPadi
         {
             if (e.RowIndex >= 0)
             {
-                string namaPetani = dgvAntrian.Rows[e.RowIndex].Cells["nama_petani"].Value.ToString();
-                string nomorAntrian = dgvAntrian.Rows[e.RowIndex].Cells["nomor_antrian"].Value.ToString();
-                string status = dgvAntrian.Rows[e.RowIndex].Cells["status"].Value.ToString();
-                string beratGabah = dgvAntrian.Rows[e.RowIndex].Cells["berat_gabah"].Value.ToString();
+                DataRowView row = (DataRowView)bsAntrian[e.RowIndex];
+                string namaPetani = row["nama_petani"].ToString();
+                string nomorAntrian = row["nomor_antrian"].ToString();
+                string status = row["status"].ToString();
+                string beratGabah = row["berat_gabah"].ToString();
 
                 lblSelectedInfo.Text = $"📌 Terpilih: {namaPetani} | No Antrian: {nomorAntrian} | Berat: {beratGabah} kg | Status: {status}";
             }
@@ -896,7 +1011,8 @@ namespace AplikasiGilinganPadi
         {
             if (e.RowIndex >= 0)
             {
-                string namaPetani = dgvPetani.Rows[e.RowIndex].Cells["nama"].Value.ToString();
+                DataRowView row = (DataRowView)bsPetani[e.RowIndex];
+                string namaPetani = row["nama"].ToString();
                 lblSelectedPetaniInfo.Text = $"👨‍🌾 Terpilih: {namaPetani}";
             }
         }

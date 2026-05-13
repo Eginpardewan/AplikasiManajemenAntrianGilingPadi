@@ -42,6 +42,20 @@ namespace AplikasiGilinganPadi
         private Button btnEditPetani;
         private Button btnHapusPetani;
 
+        // SATU Binding Navigator untuk SEMUA data
+        private BindingNavigator bindingNavigator1;
+        private ToolStripButton bindingNavigatorAddNewItem;
+        private ToolStripLabel bindingNavigatorCountItem;
+        private ToolStripButton bindingNavigatorDeleteItem;
+        private ToolStripButton bindingNavigatorMoveFirstItem;
+        private ToolStripButton bindingNavigatorMovePreviousItem;
+        private ToolStripSeparator bindingNavigatorSeparator;
+        private ToolStripTextBox bindingNavigatorPositionItem;
+        private ToolStripSeparator bindingNavigatorSeparator1;
+        private ToolStripButton bindingNavigatorMoveNextItem;
+        private ToolStripButton bindingNavigatorMoveLastItem;
+        private ToolStripSeparator bindingNavigatorSeparator2;
+
         // Main Area Controls - Tab Control
         private TabControl tabControlMain;
         private TabPage tabPageAntrian;
@@ -80,11 +94,29 @@ namespace AplikasiGilinganPadi
 
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUtama));
+
             this.panelHeader = new Panel();
             this.pictureBoxLogo = new PictureBox();
             this.lblTitle = new Label();
             this.lblWelcome = new Label();
             this.lblDateTime = new Label();
+
+            // SATU Binding Navigator Components
+            this.bindingNavigator1 = new BindingNavigator(this.components);
+            this.bindingNavigatorAddNewItem = new ToolStripButton();
+            this.bindingNavigatorCountItem = new ToolStripLabel();
+            this.bindingNavigatorDeleteItem = new ToolStripButton();
+            this.bindingNavigatorMoveFirstItem = new ToolStripButton();
+            this.bindingNavigatorMovePreviousItem = new ToolStripButton();
+            this.bindingNavigatorSeparator = new ToolStripSeparator();
+            this.bindingNavigatorPositionItem = new ToolStripTextBox();
+            this.bindingNavigatorSeparator1 = new ToolStripSeparator();
+            this.bindingNavigatorMoveNextItem = new ToolStripButton();
+            this.bindingNavigatorMoveLastItem = new ToolStripButton();
+            this.bindingNavigatorSeparator2 = new ToolStripSeparator();
+
             this.panelSidebar = new Panel();
             this.btnKelolaAntrian = new Button();
             this.panelSubmenuAntrian = new Panel();
@@ -126,6 +158,8 @@ namespace AplikasiGilinganPadi
 
             this.panelHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingNavigator1)).BeginInit();
+            this.bindingNavigator1.SuspendLayout();
             this.panelSidebar.SuspendLayout();
             this.panelSubmenuAntrian.SuspendLayout();
             this.panelSubmenuPetani.SuspendLayout();
@@ -184,6 +218,92 @@ namespace AplikasiGilinganPadi
             this.lblDateTime.Location = new System.Drawing.Point(830, 35);
             this.lblDateTime.TextAlign = ContentAlignment.MiddleRight;
             this.lblDateTime.Text = DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss");
+
+            // ========== SATU BINDING NAVIGATOR ==========
+            this.bindingNavigator1.AddNewItem = this.bindingNavigatorAddNewItem;
+            this.bindingNavigator1.CountItem = this.bindingNavigatorCountItem;
+            this.bindingNavigator1.DeleteItem = this.bindingNavigatorDeleteItem;
+            this.bindingNavigator1.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.bindingNavigator1.Items.AddRange(new ToolStripItem[] {
+            this.bindingNavigatorMoveFirstItem,
+            this.bindingNavigatorMovePreviousItem,
+            this.bindingNavigatorSeparator,
+            this.bindingNavigatorPositionItem,
+            this.bindingNavigatorCountItem,
+            this.bindingNavigatorSeparator1,
+            this.bindingNavigatorMoveNextItem,
+            this.bindingNavigatorMoveLastItem,
+            this.bindingNavigatorSeparator2,
+            this.bindingNavigatorAddNewItem,
+            this.bindingNavigatorDeleteItem});
+            this.bindingNavigator1.Dock = DockStyle.Top;
+            this.bindingNavigator1.Location = new System.Drawing.Point(0, 65);
+            this.bindingNavigator1.MoveFirstItem = this.bindingNavigatorMoveFirstItem;
+            this.bindingNavigator1.MoveLastItem = this.bindingNavigatorMoveLastItem;
+            this.bindingNavigator1.MoveNextItem = this.bindingNavigatorMoveNextItem;
+            this.bindingNavigator1.MovePreviousItem = this.bindingNavigatorMovePreviousItem;
+            this.bindingNavigator1.Name = "bindingNavigator1";
+            this.bindingNavigator1.PositionItem = this.bindingNavigatorPositionItem;
+            this.bindingNavigator1.Size = new System.Drawing.Size(1100, 31);
+            this.bindingNavigator1.TabIndex = 21;
+            this.bindingNavigator1.Text = "bindingNavigator1";
+            this.bindingNavigator1.Visible = true;
+
+            // Tombol Binding Navigator
+            this.bindingNavigatorMoveFirstItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorMoveFirstItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveFirstItem.Image")));
+            this.bindingNavigatorMoveFirstItem.Name = "bindingNavigatorMoveFirstItem";
+            this.bindingNavigatorMoveFirstItem.Text = "⏮️";
+            this.bindingNavigatorMoveFirstItem.ToolTipText = "Pindah ke data pertama";
+
+            this.bindingNavigatorMovePreviousItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorMovePreviousItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMovePreviousItem.Image")));
+            this.bindingNavigatorMovePreviousItem.Name = "bindingNavigatorMovePreviousItem";
+            this.bindingNavigatorMovePreviousItem.Text = "◀️";
+            this.bindingNavigatorMovePreviousItem.ToolTipText = "Pindah ke data sebelumnya";
+
+            this.bindingNavigatorSeparator.Name = "bindingNavigatorSeparator";
+            this.bindingNavigatorSeparator.Size = new System.Drawing.Size(6, 28);
+
+            this.bindingNavigatorPositionItem.Name = "bindingNavigatorPositionItem";
+            this.bindingNavigatorPositionItem.Size = new System.Drawing.Size(50, 28);
+            this.bindingNavigatorPositionItem.Text = "0";
+
+            this.bindingNavigatorCountItem.Name = "bindingNavigatorCountItem";
+            this.bindingNavigatorCountItem.Size = new System.Drawing.Size(45, 28);
+            this.bindingNavigatorCountItem.Text = "of {0}";
+
+            this.bindingNavigatorSeparator1.Name = "bindingNavigatorSeparator1";
+            this.bindingNavigatorSeparator1.Size = new System.Drawing.Size(6, 28);
+
+            this.bindingNavigatorMoveNextItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorMoveNextItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveNextItem.Image")));
+            this.bindingNavigatorMoveNextItem.Name = "bindingNavigatorMoveNextItem";
+            this.bindingNavigatorMoveNextItem.Text = "▶️";
+            this.bindingNavigatorMoveNextItem.ToolTipText = "Pindah ke data selanjutnya";
+
+            this.bindingNavigatorMoveLastItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorMoveLastItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveLastItem.Image")));
+            this.bindingNavigatorMoveLastItem.Name = "bindingNavigatorMoveLastItem";
+            this.bindingNavigatorMoveLastItem.Text = "⏭️";
+            this.bindingNavigatorMoveLastItem.ToolTipText = "Pindah ke data terakhir";
+
+            this.bindingNavigatorSeparator2.Name = "bindingNavigatorSeparator2";
+            this.bindingNavigatorSeparator2.Size = new System.Drawing.Size(6, 28);
+
+            this.bindingNavigatorAddNewItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorAddNewItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorAddNewItem.Image")));
+            this.bindingNavigatorAddNewItem.Name = "bindingNavigatorAddNewItem";
+            this.bindingNavigatorAddNewItem.Text = "➕";
+            this.bindingNavigatorAddNewItem.ToolTipText = "Tambah data baru";
+            this.bindingNavigatorAddNewItem.Click += new System.EventHandler(this.bindingNavigatorAddNewItem_Click);
+
+            this.bindingNavigatorDeleteItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorDeleteItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorDeleteItem.Image")));
+            this.bindingNavigatorDeleteItem.Name = "bindingNavigatorDeleteItem";
+            this.bindingNavigatorDeleteItem.Text = "🗑️";
+            this.bindingNavigatorDeleteItem.ToolTipText = "Hapus data yang dipilih";
+            this.bindingNavigatorDeleteItem.Click += new System.EventHandler(this.bindingNavigatorDeleteItem_Click);
 
             // ========== PANEL SIDEBAR (KIRI) ==========
             this.panelSidebar.BackColor = Color.FromArgb(44, 62, 80);
@@ -372,7 +492,7 @@ namespace AplikasiGilinganPadi
             this.panelSidebar.Controls.Add(this.btnRefresh);
             this.panelSidebar.Controls.Add(this.btnLogout);
 
-            // ========== PANEL MAIN (KANAN) ==========
+            // ========== PANEL MAIN ==========
             this.panelMain.BackColor = Color.FromArgb(236, 240, 241);
             this.panelMain.Dock = DockStyle.Fill;
             this.panelMain.Padding = new Padding(10);
@@ -419,7 +539,6 @@ namespace AplikasiGilinganPadi
             this.dgvAntrian.ReadOnly = true;
             this.dgvAntrian.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvAntrian.MultiSelect = false;
-            this.dgvAntrian.CellClick += new DataGridViewCellEventHandler(this.dgvAntrian_CellClick);
 
             this.tabPageAntrian.Controls.Add(this.dgvAntrian);
             this.tabPageAntrian.Controls.Add(this.groupBoxSearch);
@@ -471,7 +590,7 @@ namespace AplikasiGilinganPadi
 
             this.panelMain.Controls.Add(this.tabControlMain);
 
-            // ========== PANEL STATUS (BAWAH) ==========
+            // ========== PANEL STATUS ==========
             this.panelStatus.BackColor = Color.FromArgb(52, 73, 94);
             this.panelStatus.Dock = DockStyle.Bottom;
             this.panelStatus.Height = 60;
@@ -529,12 +648,16 @@ namespace AplikasiGilinganPadi
             // ========== ADD TO FORM ==========
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.panelSidebar);
+            this.Controls.Add(this.bindingNavigator1);
             this.Controls.Add(this.panelHeader);
             this.Controls.Add(this.panelStatus);
 
             this.panelHeader.ResumeLayout(false);
             this.panelHeader.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingNavigator1)).EndInit();
+            this.bindingNavigator1.ResumeLayout(false);
+            this.bindingNavigator1.PerformLayout();
             this.panelSidebar.ResumeLayout(false);
             this.panelSubmenuAntrian.ResumeLayout(false);
             this.panelSubmenuPetani.ResumeLayout(false);
@@ -552,6 +675,7 @@ namespace AplikasiGilinganPadi
             this.panelStats.ResumeLayout(false);
             this.panelStats.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
         }
     }
 }
