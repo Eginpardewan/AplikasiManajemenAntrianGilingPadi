@@ -64,6 +64,12 @@
     <Compile Include="FormLaporan.Designer.cs">
       <DependentUpon>FormLaporan.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormPetani.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPetani.Designer.cs">
+      <DependentUpon>FormPetani.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormUtama.cs">
       <SubType>Form</SubType>
     </Compile>
