@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Text.RegularExpressions;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace AplikasiGilinganPadi
@@ -15,6 +15,8 @@ namespace AplikasiGilinganPadi
         private DateTime tanggalAwal;
         private DateTime minDate;
         private DateTime maxDate;
+        private int idPetaniTerpilih = 0;
+        private DataTable dtPetani;
 
         public FormAntrian(string connString, int id)
         {
@@ -23,6 +25,8 @@ namespace AplikasiGilinganPadi
             conn = new SqlConnection(connectionString);
             idAntrian = id;
             isEdit = (id > 0);
+
+            LoadPetaniToComboBox();
 
             if (isEdit)
             {
@@ -35,13 +39,56 @@ namespace AplikasiGilinganPadi
                 this.Text = "➕ Tambah Antrian Baru";
                 btnSimpan.Text = "💾 Simpan";
                 GenerateNomorAntrian();
-
-                // Hanya set value, TIDAK set MinDate/MaxDate agar semua tanggal terlihat
                 dtpTanggal.Value = DateTime.Today;
-
-                // Simpan range untuk validasi (tidak mempengaruhi tampilan kalender)
                 minDate = DateTime.Today;
                 maxDate = DateTime.Today.AddDays(7);
+            }
+        }
+
+        private void LoadPetaniToComboBox()
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = "SELECT id_petani, nama, alamat, no_telepon FROM Petani ORDER BY nama";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                dtPetani = new DataTable();
+                da.Fill(dtPetani);
+
+                cmbNamaPetani.DataSource = dtPetani;
+                cmbNamaPetani.DisplayMember = "nama";
+                cmbNamaPetani.ValueMember = "id_petani";
+                cmbNamaPetani.SelectedIndex = -1;
+
+                cmbNamaPetani.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                cmbNamaPetani.AutoCompleteSource = AutoCompleteSource.ListItems;
+
+                conn.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading petani: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void cmbNamaPetani_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbNamaPetani.SelectedValue != null && cmbNamaPetani.SelectedValue is int)
+            {
+                idPetaniTerpilih = (int)cmbNamaPetani.SelectedValue;
+
+                foreach (DataRow row in dtPetani.Rows)
+                {
+                    if (Convert.ToInt32(row["id_petani"]) == idPetaniTerpilih)
+                    {
+                        txtAlamat.Text = row["alamat"].ToString();
+                        txtNoTelepon.Text = row["no_telepon"].ToString();
+                        break;
+                    }
+                }
             }
         }
 
@@ -52,8 +99,8 @@ namespace AplikasiGilinganPadi
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                SqlCommand cmd = new SqlCommand("GenerateNomorAntrian", conn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                string query = "SELECT ISNULL(MAX(nomor_antrian), 0) + 1 FROM Antrian";
+                SqlCommand cmd = new SqlCommand(query, conn);
                 int nomor = Convert.ToInt32(cmd.ExecuteScalar());
                 txtNomorAntrian.Text = nomor.ToString();
 
@@ -61,7 +108,7 @@ namespace AplikasiGilinganPadi
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error",
+                MessageBox.Show("Error generate nomor: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -73,23 +120,31 @@ namespace AplikasiGilinganPadi
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                string query = "SELECT * FROM Antrian WHERE id_antrian = @id";
+                string query = @"SELECT a.id_antrian, a.id_petani, a.nomor_antrian, 
+                                        a.berat_gabah, a.tanggal_giling, a.status,
+                                        p.nama, p.alamat, p.no_telepon
+                                 FROM Antrian a
+                                 JOIN Petani p ON a.id_petani = p.id_petani
+                                 WHERE a.id_antrian = @id";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@id", idAntrian);
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.Read())
                 {
+                    idPetaniTerpilih = reader.GetInt32(1);
                     txtNomorAntrian.Text = reader["nomor_antrian"].ToString();
-                    txtNamaPetani.Text = reader["nama_petani"].ToString();
-                    txtAlamat.Text = reader["alamat"].ToString();
-                    txtNoTelepon.Text = reader["no_telepon"].ToString();
-                    txtBeratGabah.Text = reader["berat_gabah"].ToString();
-                    tanggalAwal = Convert.ToDateTime(reader["tanggal_antrian"]);
-                    dtpTanggal.Value = tanggalAwal;
-                    cmbStatus.Text = reader["status"].ToString();
 
-                    // Simpan range untuk validasi (tidak mempengaruhi tampilan kalender)
+                    // Format angka dengan koma
+                    decimal beratGabah = Convert.ToDecimal(reader["berat_gabah"]);
+                    txtBeratGabah.Text = FormatDecimalWithComma(beratGabah);
+
+                    tanggalAwal = Convert.ToDateTime(reader["tanggal_giling"]);
+                    dtpTanggal.Value = tanggalAwal;
+                    cmbStatus.SelectedItem = reader["status"].ToString();
+
+                    cmbNamaPetani.SelectedValue = idPetaniTerpilih;
+
                     minDate = tanggalAwal;
                     maxDate = tanggalAwal.AddDays(7);
                 }
@@ -98,104 +153,62 @@ namespace AplikasiGilinganPadi
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error",
+                MessageBox.Show("Error load data: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // ========== VALIDASI TANGGAL (MANUAL, TIDAK MEMPENGARUHI TAMPILAN) ==========
         private bool ValidateTanggal()
         {
             DateTime selectedDate = dtpTanggal.Value.Date;
 
-            if (!isEdit) // Mode Tambah
+            if (!isEdit)
             {
                 if (selectedDate < minDate)
                 {
-                    MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!\n\n" +
-                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
-                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!", "Validasi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     dtpTanggal.Value = minDate;
                     return false;
                 }
-
                 if (selectedDate > maxDate)
                 {
-                    MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!\n\n" +
-                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
-                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!", "Validasi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     dtpTanggal.Value = maxDate;
                     return false;
                 }
             }
-            else // Mode Edit
+            else
             {
                 if (selectedDate < minDate)
                 {
-                    MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!\n\n" +
-                        $"Tanggal awal antrian: {tanggalAwal:dd/MM/yyyy}\n" +
-                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
-                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"❌ Tanggal tidak boleh kurang dari {minDate:dd/MM/yyyy}!", "Validasi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     dtpTanggal.Value = minDate;
                     return false;
                 }
-
                 if (selectedDate > maxDate)
                 {
-                    MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!\n\n" +
-                        $"Tanggal awal antrian: {tanggalAwal:dd/MM/yyyy}\n" +
-                        $"Silakan pilih tanggal antara {minDate:dd/MM/yyyy} - {maxDate:dd/MM/yyyy}.",
-                        "Validasi Tanggal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"❌ Tanggal tidak boleh lebih dari {maxDate:dd/MM/yyyy}!", "Validasi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     dtpTanggal.Value = maxDate;
                     return false;
                 }
             }
-
             return true;
         }
 
         private void btnSimpan_Click(object sender, EventArgs e)
         {
-            // ========== VALIDASI SEMUA FIELD ==========
-
-            // Validasi Nama Petani
-            if (string.IsNullOrWhiteSpace(txtNamaPetani.Text))
+            if (cmbNamaPetani.SelectedIndex == -1)
             {
-                MessageBox.Show("❌ Nama Petani harus diisi!", "Validasi",
+                MessageBox.Show("❌ Pilih Nama Petani terlebih dahulu!", "Validasi",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtNamaPetani.Focus();
+                cmbNamaPetani.Focus();
                 return;
             }
 
-            // Validasi Alamat
-            if (string.IsNullOrWhiteSpace(txtAlamat.Text))
-            {
-                MessageBox.Show("❌ Alamat harus diisi!", "Validasi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtAlamat.Focus();
-                return;
-            }
-
-            // Validasi No Telepon
-            if (string.IsNullOrWhiteSpace(txtNoTelepon.Text))
-            {
-                MessageBox.Show("❌ No Telepon harus diisi!", "Validasi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtNoTelepon.Focus();
-                return;
-            }
-
-            // Validasi Format No Telepon
-            string noTelepon = txtNoTelepon.Text.Trim();
-            if (!Regex.IsMatch(noTelepon, @"^[0-9]{10,15}$"))
-            {
-                MessageBox.Show("❌ No Telepon harus berisi 10-15 digit angka!\nContoh: 081234567890",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtNoTelepon.Focus();
-                return;
-            }
-
-            // Validasi Berat Gabah
             if (string.IsNullOrWhiteSpace(txtBeratGabah.Text))
             {
                 MessageBox.Show("❌ Berat Gabah harus diisi!", "Validasi",
@@ -204,48 +217,27 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Validasi Format Berat Gabah
-            decimal beratGabah;
-            if (!decimal.TryParse(txtBeratGabah.Text, out beratGabah))
-            {
-                MessageBox.Show("❌ Berat Gabah harus berupa angka yang valid!\nContoh: 100.5",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtBeratGabah.Focus();
-                return;
-            }
+            // Parse angka dengan dukungan koma
+            decimal beratGabah = ParseDecimalWithComma(txtBeratGabah.Text);
 
-            // Validasi Berat Gabah > 0
             if (beratGabah <= 0)
             {
-                MessageBox.Show("❌ Berat Gabah harus lebih dari 0 kg!",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("❌ Berat Gabah harus berupa angka positif!\nContoh: 100,5 atau 100.5", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtBeratGabah.Focus();
                 return;
             }
 
-            // Validasi Nama Petani minimal 3 karakter
-            if (txtNamaPetani.Text.Trim().Length < 3)
+            if (cmbStatus.SelectedItem == null)
             {
-                MessageBox.Show("❌ Nama Petani minimal 3 karakter!",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtNamaPetani.Focus();
+                MessageBox.Show("❌ Pilih Status Antrian terlebih dahulu!", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmbStatus.Focus();
                 return;
             }
 
-            // Validasi Alamat minimal 5 karakter
-            if (txtAlamat.Text.Trim().Length < 5)
-            {
-                MessageBox.Show("❌ Alamat minimal 5 karakter!",
-                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtAlamat.Focus();
-                return;
-            }
-
-            // ========== VALIDASI TANGGAL (MANUAL) ==========
             if (!ValidateTanggal())
-            {
                 return;
-            }
 
             try
             {
@@ -254,47 +246,34 @@ namespace AplikasiGilinganPadi
 
                 if (isEdit)
                 {
-                    // UPDATE
-                    string query = @"UPDATE Antrian SET 
-                                    nama_petani = @nama, 
-                                    alamat = @alamat, 
-                                    no_telepon = @telp, 
-                                    berat_gabah = @berat, 
-                                    tanggal_antrian = @tanggal, 
-                                    status = @status 
+                    string query = @"UPDATE Antrian 
+                                    SET id_petani = @id_petani, 
+                                        berat_gabah = @berat, 
+                                        tanggal_giling = @tanggal, 
+                                        status = @status 
                                     WHERE id_antrian = @id";
-
                     SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@nama", txtNamaPetani.Text.Trim());
-                    cmd.Parameters.AddWithValue("@alamat", txtAlamat.Text.Trim());
-                    cmd.Parameters.AddWithValue("@telp", txtNoTelepon.Text.Trim());
+                    cmd.Parameters.AddWithValue("@id_petani", idPetaniTerpilih);
                     cmd.Parameters.AddWithValue("@berat", beratGabah);
                     cmd.Parameters.AddWithValue("@tanggal", dtpTanggal.Value);
-                    cmd.Parameters.AddWithValue("@status", cmbStatus.Text);
+                    cmd.Parameters.AddWithValue("@status", cmbStatus.SelectedItem.ToString());
                     cmd.Parameters.AddWithValue("@id", idAntrian);
                     cmd.ExecuteNonQuery();
-
                     MessageBox.Show("✅ Data antrian berhasil diupdate!", "Sukses",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    // INSERT
                     string query = @"INSERT INTO Antrian 
-                                    (nomor_antrian, nama_petani, alamat, no_telepon, berat_gabah, tanggal_antrian, status) 
-                                    VALUES 
-                                    (@nomor, @nama, @alamat, @telp, @berat, @tanggal, @status)";
-
+                                    (id_petani, nomor_antrian, berat_gabah, tanggal_giling, status) 
+                                    VALUES (@id_petani, @nomor, @berat, @tanggal, @status)";
                     SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@id_petani", idPetaniTerpilih);
                     cmd.Parameters.AddWithValue("@nomor", Convert.ToInt32(txtNomorAntrian.Text));
-                    cmd.Parameters.AddWithValue("@nama", txtNamaPetani.Text.Trim());
-                    cmd.Parameters.AddWithValue("@alamat", txtAlamat.Text.Trim());
-                    cmd.Parameters.AddWithValue("@telp", txtNoTelepon.Text.Trim());
                     cmd.Parameters.AddWithValue("@berat", beratGabah);
                     cmd.Parameters.AddWithValue("@tanggal", dtpTanggal.Value);
-                    cmd.Parameters.AddWithValue("@status", "menunggu");
+                    cmd.Parameters.AddWithValue("@status", cmbStatus.SelectedItem.ToString());
                     cmd.ExecuteNonQuery();
-
                     MessageBox.Show("✅ Antrian baru berhasil ditambahkan!", "Sukses",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -316,38 +295,51 @@ namespace AplikasiGilinganPadi
         {
             DialogResult confirm = MessageBox.Show("Yakin ingin membatalkan?",
                 "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
             if (confirm == DialogResult.Yes)
-            {
                 this.Close();
-            }
         }
 
-        private void txtNoTelepon_KeyPress(object sender, KeyPressEventArgs e)
+        // ========== KONVERSI ANGKA DENGAN DUKUNGAN KOMA ==========
+        private decimal ParseDecimalWithComma(string input)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-            }
+            if (string.IsNullOrWhiteSpace(input))
+                return 0;
+
+            // Ganti koma dengan titik untuk parsing
+            string normalized = input.Trim().Replace(',', '.');
+
+            if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
+                return result;
+
+            return 0;
         }
 
+        private string FormatDecimalWithComma(decimal value)
+        {
+            // Format dengan koma sebagai pemisah desimal
+            return value.ToString("#,0.##", new CultureInfo("id-ID"));
+        }
+
+        // ========== KEYPRESS UNTUK BERAT (DENGAN KOMA) ==========
         private void txtBeratGabah_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
-            {
-                e.Handled = true;
-            }
-            if (e.KeyChar == '.' && (sender as TextBox).Text.Contains("."))
-            {
-                e.Handled = true;
-            }
-        }
+            // Izinkan backspace, delete, enter, tab
+            if (char.IsControl(e.KeyChar))
+                return;
 
-        private void txtNamaPetani_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+            // Izinkan angka, koma, dan titik
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != '.')
             {
                 e.Handled = true;
+                return;
+            }
+
+            // Cegah lebih dari satu koma atau titik
+            TextBox txt = sender as TextBox;
+            if ((e.KeyChar == ',' || e.KeyChar == '.') && (txt.Text.Contains(",") || txt.Text.Contains(".")))
+            {
+                e.Handled = true;
+                return;
             }
         }
 
