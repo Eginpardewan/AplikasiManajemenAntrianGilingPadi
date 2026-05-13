@@ -16,7 +16,7 @@ namespace AplikasiGilinganPadi
         private int idAdmin;
         private string namaAdmin;
 
-        // ========== BINDING SOURCE (STEP 2) ==========
+        // ========== BINDING SOURCE ==========
         private BindingSource bsAntrian;
         private BindingSource bsPetani;
         private DataTable dtAntrian;
@@ -31,7 +31,7 @@ namespace AplikasiGilinganPadi
 
             conn = new SqlConnection(connectionString);
 
-            // ========== INISIALISASI BINDING SOURCE (STEP 2) ==========
+            // ========== INISIALISASI BINDING SOURCE ==========
             bsAntrian = new BindingSource();
             bsPetani = new BindingSource();
 
@@ -40,6 +40,10 @@ namespace AplikasiGilinganPadi
 
             SetupDataGridView();
             SetupDataGridViewPetani();
+
+            // ========== SETUP BINDING NAVIGATOR ==========
+            bindingNavigator1.BindingSource = bsAntrian;
+            bindingNavigator1.Visible = true;
 
             LoadDataAntrian();
             LoadDataPetani();
@@ -136,8 +140,12 @@ namespace AplikasiGilinganPadi
             pictureBoxLogo.Image = bmp;
         }
 
+        // ========== SETUP DATAGRIDVIEW DENGAN BINDING SOURCE ==========
         private void SetupDataGridView()
         {
+            // Hubungkan DataGridView ke BindingSource
+            dgvAntrian.DataSource = bsAntrian;
+
             dgvAntrian.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvAntrian.MultiSelect = false;
             dgvAntrian.ReadOnly = true;
@@ -148,6 +156,9 @@ namespace AplikasiGilinganPadi
 
         private void SetupDataGridViewPetani()
         {
+            // Hubungkan DataGridView Petani ke BindingSource Petani
+            dgvPetani.DataSource = bsPetani;
+
             dgvPetani.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvPetani.MultiSelect = false;
             dgvPetani.ReadOnly = true;
@@ -156,6 +167,7 @@ namespace AplikasiGilinganPadi
             dgvPetani.RowHeadersVisible = false;
         }
 
+        // ========== LOAD DATA DENGAN BINDING SOURCE ==========
         private void LoadDataAntrian()
         {
             try
@@ -177,10 +189,11 @@ namespace AplikasiGilinganPadi
                                 ORDER BY a.nomor_antrian";
 
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+                dtAntrian = new DataTable();
+                da.Fill(dtAntrian);
 
-                dgvAntrian.DataSource = dt;
+                // Set DataTable ke BindingSource
+                bsAntrian.DataSource = dtAntrian;
 
                 if (dgvAntrian.Columns["id_antrian"] != null)
                     dgvAntrian.Columns["id_antrian"].Visible = false;
@@ -219,10 +232,11 @@ namespace AplikasiGilinganPadi
 
                 string query = "SELECT id_petani, nama, alamat, no_telepon, created_at FROM Petani ORDER BY nama";
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+                dtPetani = new DataTable();
+                da.Fill(dtPetani);
 
-                dgvPetani.DataSource = dt;
+                // Set DataTable ke BindingSource
+                bsPetani.DataSource = dtPetani;
 
                 if (dgvPetani.Columns["id_petani"] != null)
                     dgvPetani.Columns["id_petani"].Visible = false;
@@ -383,5 +397,23 @@ namespace AplikasiGilinganPadi
         {
             LoadDataPetani();
         }
+
+        // ========== METHOD YANG AKAN DITAMBAHKAN DI STEP SELANJUTNYA ==========
+        private void btnTambahAntrian_Click(object sender, EventArgs e) { }
+        private void btnEditAntrian_Click(object sender, EventArgs e) { }
+        private void btnHapusAntrian_Click(object sender, EventArgs e) { }
+        private void btnTambahPetani_Click(object sender, EventArgs e) { }
+        private void btnEditPetani_Click(object sender, EventArgs e) { }
+        private void btnHapusPetani_Click(object sender, EventArgs e) { }
+        private void btnProsesGiling_Click(object sender, EventArgs e) { }
+        private void btnCatatHasil_Click(object sender, EventArgs e) { }
+        private void btnLaporan_Click(object sender, EventArgs e) { }
+        private void btnSearch_Click(object sender, EventArgs e) { }
+        private void btnSearchPetani_Click(object sender, EventArgs e) { }
+        private void bindingNavigatorAddNewItem_Click(object sender, EventArgs e) { }
+        private void bindingNavigatorDeleteItem_Click(object sender, EventArgs e) { }
+        private void dgvAntrian_CellClick(object sender, DataGridViewCellEventArgs e) { }
+        private void dgvPetani_CellClick(object sender, DataGridViewCellEventArgs e) { }
+        private void CekDanBukaFormHasilGiling(int idAntrian) { }
     }
 }
