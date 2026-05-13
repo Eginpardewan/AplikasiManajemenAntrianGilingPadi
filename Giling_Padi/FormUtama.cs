@@ -521,7 +521,6 @@ namespace AplikasiGilinganPadi
             LoadDataAntrian();
         }
 
-        // ========== EDIT ANTRIAN ==========
         private void btnEditAntrian_Click(object sender, EventArgs e)
         {
             if (dgvAntrian.SelectedRows.Count > 0)
@@ -562,7 +561,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== HAPUS ANTRIAN ==========
         private void btnHapusAntrian_Click(object sender, EventArgs e)
         {
             if (dgvAntrian.SelectedRows.Count > 0)
@@ -622,7 +620,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== PROSES GILING (DIPERBAIKI) ==========
         private void btnProsesGiling_Click(object sender, EventArgs e)
         {
             if (dgvAntrian.SelectedRows.Count > 0)
@@ -667,7 +664,6 @@ namespace AplikasiGilinganPadi
                 }
                 else if (statusSaatIni == "proses")
                 {
-                    // Cek apakah sudah pernah dicatat hasil gilingnya
                     int sudahAda = 0;
                     try
                     {
@@ -686,7 +682,6 @@ namespace AplikasiGilinganPadi
 
                     if (sudahAda > 0)
                     {
-                        // Jika sudah ada hasil giling, langsung update status menjadi selesai
                         DialogResult confirm = MessageBox.Show(
                             $"Antrian '{namaPetani}' sudah memiliki catatan hasil giling.\n\nApakah ingin mengubah status menjadi 'SELESAI'?",
                             "Konfirmasi Selesai",
@@ -721,7 +716,6 @@ namespace AplikasiGilinganPadi
                     }
                     else
                     {
-                        // Belum ada hasil giling, buka FormHasilGiling
                         DialogResult confirm = MessageBox.Show(
                             $"Menyelesaikan proses gilingan '{namaPetani}'?\n\nAnda akan diminta mencatat hasil giling.",
                             "Konfirmasi Selesai",
@@ -735,7 +729,6 @@ namespace AplikasiGilinganPadi
 
                             if (hasilForm == DialogResult.OK)
                             {
-                                // User menyimpan hasil giling, update status menjadi selesai
                                 try
                                 {
                                     if (conn.State == ConnectionState.Closed)
@@ -761,7 +754,6 @@ namespace AplikasiGilinganPadi
                             }
                             else
                             {
-                                // User membatalkan, status tetap proses
                                 MessageBox.Show("Status antrian tetap 'PROSES'.\nSilakan catat hasil giling nanti melalui menu 'Catat Hasil Giling'.",
                                     "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
@@ -781,7 +773,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== CEK DAN BUKA FORM HASIL GILING ==========
         private void CekDanBukaFormHasilGiling(int idAntrian)
         {
             try
@@ -817,7 +808,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== CATAT HASIL GILING ==========
         private void btnCatatHasil_Click(object sender, EventArgs e)
         {
             if (dgvAntrian.SelectedRows.Count > 0)

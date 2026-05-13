@@ -1,15 +1,25 @@
-﻿namespace Giling_Padi
+﻿using System.Windows.Forms;
+
+namespace AplikasiGilinganPadi
 {
     partial class FormPetani
     {
         private System.ComponentModel.IContainer components = null;
+        private System.Windows.Forms.Label lblNama;
+        private System.Windows.Forms.Label lblAlamat;
+        private System.Windows.Forms.Label lblNoTelepon;
+        private System.Windows.Forms.TextBox txtNama;
+        private System.Windows.Forms.TextBox txtAlamat;
+        private System.Windows.Forms.TextBox txtNoTelepon;
+        private System.Windows.Forms.Button btnSimpan;
+        private System.Windows.Forms.Button btnBatal;
+        private System.Windows.Forms.Button btnTestInjection;
+        private System.Windows.Forms.Button btnResetData;
 
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
-            {
                 components.Dispose();
-            }
             base.Dispose(disposing);
         }
 
@@ -23,119 +33,104 @@
             this.txtNoTelepon = new System.Windows.Forms.TextBox();
             this.btnSimpan = new System.Windows.Forms.Button();
             this.btnBatal = new System.Windows.Forms.Button();
+            this.btnTestInjection = new System.Windows.Forms.Button();
+            this.btnResetData = new System.Windows.Forms.Button();
             this.SuspendLayout();
 
-            // ========== FORM SETTING ==========
-            this.ClientSize = new System.Drawing.Size(450, 280);
-            this.Text = "👨‍🌾 Form Petani";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            // Form
+            this.ClientSize = new System.Drawing.Size(500, 350);
+            this.Text = "Form Petani";
+            this.StartPosition = FormStartPosition.CenterParent;
             this.BackColor = System.Drawing.Color.White;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            // ========== LABEL NAMA ==========
+            // Label Nama
             this.lblNama.AutoSize = true;
-            this.lblNama.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblNama.Location = new System.Drawing.Point(30, 30);
-            this.lblNama.Name = "lblNama";
-            this.lblNama.Size = new System.Drawing.Size(108, 20);
-            this.lblNama.TabIndex = 0;
-            this.lblNama.Text = "👨‍🌾 Nama Petani :";
+            this.lblNama.Text = "Nama Petani :";
 
-            // ========== TEXTBOX NAMA ==========
-            this.txtNama.Font = new System.Drawing.Font("Segoe UI", 10F);
+            // TextBox Nama
             this.txtNama.Location = new System.Drawing.Point(150, 27);
-            this.txtNama.Name = "txtNama";
-            this.txtNama.Size = new System.Drawing.Size(250, 28);
-            this.txtNama.TabIndex = 1;
+            this.txtNama.Size = new System.Drawing.Size(300, 23);
 
-            // ========== LABEL ALAMAT ==========
+            // Label Alamat
             this.lblAlamat.AutoSize = true;
-            this.lblAlamat.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblAlamat.Location = new System.Drawing.Point(30, 75);
-            this.lblAlamat.Name = "lblAlamat";
-            this.lblAlamat.Size = new System.Drawing.Size(67, 20);
-            this.lblAlamat.TabIndex = 2;
-            this.lblAlamat.Text = "🏠 Alamat :";
+            this.lblAlamat.Location = new System.Drawing.Point(30, 70);
+            this.lblAlamat.Text = "Alamat :";
 
-            // ========== TEXTBOX ALAMAT ==========
-            this.txtAlamat.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtAlamat.Location = new System.Drawing.Point(150, 72);
-            this.txtAlamat.Name = "txtAlamat";
-            this.txtAlamat.Size = new System.Drawing.Size(250, 28);
-            this.txtAlamat.TabIndex = 3;
+            // TextBox Alamat
+            this.txtAlamat.Location = new System.Drawing.Point(150, 67);
+            this.txtAlamat.Size = new System.Drawing.Size(300, 23);
 
-            // ========== LABEL NO TELEPON ==========
+            // Label No Telepon
             this.lblNoTelepon.AutoSize = true;
-            this.lblNoTelepon.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblNoTelepon.Location = new System.Drawing.Point(30, 120);
-            this.lblNoTelepon.Name = "lblNoTelepon";
-            this.lblNoTelepon.Size = new System.Drawing.Size(97, 20);
-            this.lblNoTelepon.TabIndex = 4;
-            this.lblNoTelepon.Text = "📞 No Telepon :";
+            this.lblNoTelepon.Location = new System.Drawing.Point(30, 110);
+            this.lblNoTelepon.Text = "No Telepon :";
 
-            // ========== TEXTBOX NO TELEPON ==========
-            this.txtNoTelepon.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtNoTelepon.Location = new System.Drawing.Point(150, 117);
-            this.txtNoTelepon.Name = "txtNoTelepon";
-            this.txtNoTelepon.Size = new System.Drawing.Size(180, 28);
-            this.txtNoTelepon.TabIndex = 5;
+            // TextBox No Telepon
+            this.txtNoTelepon.Location = new System.Drawing.Point(150, 107);
+            this.txtNoTelepon.Size = new System.Drawing.Size(180, 23);
 
-            // ========== BUTTON SIMPAN ==========
-            this.btnSimpan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnSimpan.Location = new System.Drawing.Point(100, 180);
-            this.btnSimpan.Name = "btnSimpan";
-            this.btnSimpan.Size = new System.Drawing.Size(120, 40);
+            // Button Test Injection
+            this.btnTestInjection.BackColor = System.Drawing.Color.FromArgb(231, 76, 60);
+            this.btnTestInjection.Cursor = Cursors.Hand;
+            this.btnTestInjection.FlatStyle = FlatStyle.Flat;
+            this.btnTestInjection.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnTestInjection.ForeColor = System.Drawing.Color.White;
+            this.btnTestInjection.Location = new System.Drawing.Point(30, 160);
+            this.btnTestInjection.Size = new System.Drawing.Size(140, 35);
+            this.btnTestInjection.Text = "🧪 Test SQL Injection";
+            this.btnTestInjection.Click += new System.EventHandler(this.btnTestInjection_Click);
+
+            // Button Reset Data
+            this.btnResetData.BackColor = System.Drawing.Color.FromArgb(52, 73, 94);
+            this.btnResetData.Cursor = Cursors.Hand;
+            this.btnResetData.FlatStyle = FlatStyle.Flat;
+            this.btnResetData.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnResetData.ForeColor = System.Drawing.Color.White;
+            this.btnResetData.Location = new System.Drawing.Point(190, 160);
+            this.btnResetData.Size = new System.Drawing.Size(120, 35);
+            this.btnResetData.Text = "🔄 Reset Data";
+            this.btnResetData.Click += new System.EventHandler(this.btnResetData_Click);
+
+            // Button Simpan
             this.btnSimpan.BackColor = System.Drawing.Color.FromArgb(39, 174, 96);
+            this.btnSimpan.Cursor = Cursors.Hand;
+            this.btnSimpan.FlatStyle = FlatStyle.Flat;
+            this.btnSimpan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnSimpan.ForeColor = System.Drawing.Color.White;
-            this.btnSimpan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSimpan.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnSimpan.TabIndex = 6;
+            this.btnSimpan.Location = new System.Drawing.Point(150, 220);
+            this.btnSimpan.Size = new System.Drawing.Size(100, 35);
             this.btnSimpan.Text = "💾 Simpan";
-            this.btnSimpan.UseVisualStyleBackColor = false;
             this.btnSimpan.Click += new System.EventHandler(this.btnSimpan_Click);
 
-            // ========== BUTTON BATAL ==========
+            // Button Batal
+            this.btnBatal.BackColor = System.Drawing.Color.FromArgb(149, 165, 166);
+            this.btnBatal.Cursor = Cursors.Hand;
+            this.btnBatal.FlatStyle = FlatStyle.Flat;
             this.btnBatal.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnBatal.Location = new System.Drawing.Point(240, 180);
-            this.btnBatal.Name = "btnBatal";
-            this.btnBatal.Size = new System.Drawing.Size(120, 40);
-            this.btnBatal.BackColor = System.Drawing.Color.FromArgb(231, 76, 60);
             this.btnBatal.ForeColor = System.Drawing.Color.White;
-            this.btnBatal.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnBatal.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnBatal.TabIndex = 7;
+            this.btnBatal.Location = new System.Drawing.Point(270, 220);
+            this.btnBatal.Size = new System.Drawing.Size(100, 35);
             this.btnBatal.Text = "❌ Batal";
-            this.btnBatal.UseVisualStyleBackColor = false;
             this.btnBatal.Click += new System.EventHandler(this.btnBatal_Click);
 
-            // ========== EVENT KEYPRESS ==========
-            this.txtNoTelepon.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtNoTelepon_KeyPress);
-            this.txtNama.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtNama_KeyPress);
-
-            // ========== ADD CONTROLS ==========
+            // Add Controls
             this.Controls.Add(this.lblNama);
             this.Controls.Add(this.txtNama);
             this.Controls.Add(this.lblAlamat);
             this.Controls.Add(this.txtAlamat);
             this.Controls.Add(this.lblNoTelepon);
             this.Controls.Add(this.txtNoTelepon);
+            this.Controls.Add(this.btnTestInjection);
+            this.Controls.Add(this.btnResetData);
             this.Controls.Add(this.btnSimpan);
             this.Controls.Add(this.btnBatal);
 
             this.ResumeLayout(false);
             this.PerformLayout();
         }
-
-        // ========== DEKLARASI VARIABEL ==========
-        private System.Windows.Forms.Label lblNama;
-        private System.Windows.Forms.Label lblAlamat;
-        private System.Windows.Forms.Label lblNoTelepon;
-        private System.Windows.Forms.TextBox txtNama;
-        private System.Windows.Forms.TextBox txtAlamat;
-        private System.Windows.Forms.TextBox txtNoTelepon;
-        private System.Windows.Forms.Button btnSimpan;
-        private System.Windows.Forms.Button btnBatal;
     }
 }
