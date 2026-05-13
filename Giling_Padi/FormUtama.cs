@@ -1,6 +1,7 @@
-﻿using System;
-using System.Data.SqlClient;
+﻿using Giling_Padi;
+using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -23,40 +24,33 @@ namespace AplikasiGilinganPadi
             this.namaAdmin = namaAdmin;
             this.connectionString = connString;
 
-            // Inisialisasi koneksi database
             conn = new SqlConnection(connectionString);
 
-            // BUAT LOGO BENTUK BULAT DENGAN BORDER/SCOPE (SAMA SEPERTI LOGIN)
             MakeLogoCircular();
-
-            // Set welcome message
             SetWelcomeMessage(namaAdmin);
 
-            // Setup DataGridView
             SetupDataGridView();
+            SetupDataGridViewPetani();
 
-            // Load data langsung
             LoadDataAntrian();
+            LoadDataPetani();
 
-            // Aktifkan semua tombol
             EnableAllButtons();
 
-            // Sembunyikan submenu antrian di awal
             if (panelSubmenuAntrian != null)
                 panelSubmenuAntrian.Visible = false;
+            if (panelSubmenuPetani != null)
+                panelSubmenuPetani.Visible = false;
         }
 
-        // ========== MEMBUAT LOGO BENTUK BULAT DENGAN BORDER/SCOPE ==========
         private void MakeLogoCircular()
         {
             try
             {
-                // Ambil gambar dari Resources (sama seperti di FormLogin)
                 Image originalImage = Giling_Padi.Properties.Resources.logo;
 
                 if (originalImage != null)
                 {
-                    // Buat gambar baru dengan border lingkaran
                     Bitmap bmp = new Bitmap(pictureBoxLogo.Width, pictureBoxLogo.Height);
 
                     using (Graphics g = Graphics.FromImage(bmp))
@@ -64,24 +58,18 @@ namespace AplikasiGilinganPadi
                         g.SmoothingMode = SmoothingMode.AntiAlias;
                         g.Clear(Color.Transparent);
 
-                        // Buat lingkaran clipping (biar gambar jadi bulat)
                         GraphicsPath clipPath = new GraphicsPath();
                         clipPath.AddEllipse(3, 3, pictureBoxLogo.Width - 6, pictureBoxLogo.Height - 6);
                         g.SetClip(clipPath);
 
-                        // Gambar image di dalam lingkaran
                         g.DrawImage(originalImage, 0, 0, pictureBoxLogo.Width, pictureBoxLogo.Height);
-
-                        // Reset clipping
                         g.ResetClip();
 
-                        // Border putih tebal (scope dalam)
                         using (Pen pen = new Pen(Color.White, 3))
                         {
                             g.DrawEllipse(pen, 3, 3, pictureBoxLogo.Width - 6, pictureBoxLogo.Height - 6);
                         }
 
-                        // Border luar warna kuning (scope luar)
                         using (Pen pen = new Pen(Color.FromArgb(241, 196, 15), 2))
                         {
                             g.DrawEllipse(pen, 1, 1, pictureBoxLogo.Width - 2, pictureBoxLogo.Height - 2);
@@ -104,7 +92,6 @@ namespace AplikasiGilinganPadi
             pictureBoxLogo.BackColor = Color.Transparent;
         }
 
-        // ========== LOGO DEFAULT (JIKA GAMBAR TIDAK ADA) ==========
         private void CreateDefaultLogo()
         {
             Bitmap bmp = new Bitmap(pictureBoxLogo.Width, pictureBoxLogo.Height);
@@ -113,13 +100,11 @@ namespace AplikasiGilinganPadi
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 g.Clear(Color.Transparent);
 
-                // Lingkaran background
                 using (SolidBrush brush = new SolidBrush(Color.FromArgb(241, 196, 15)))
                 {
                     g.FillEllipse(brush, 3, 3, pictureBoxLogo.Width - 6, pictureBoxLogo.Height - 6);
                 }
 
-                // Teks "🌾" di tengah
                 using (Font font = new Font("Segoe UI", pictureBoxLogo.Width / 2, FontStyle.Bold))
                 using (SolidBrush brush = new SolidBrush(Color.White))
                 {
@@ -129,13 +114,11 @@ namespace AplikasiGilinganPadi
                     g.DrawString("🌾", font, brush, x, y);
                 }
 
-                // Border putih
                 using (Pen pen = new Pen(Color.White, 3))
                 {
                     g.DrawEllipse(pen, 3, 3, pictureBoxLogo.Width - 6, pictureBoxLogo.Height - 6);
                 }
 
-                // Border luar kuning
                 using (Pen pen = new Pen(Color.FromArgb(241, 196, 15), 2))
                 {
                     g.DrawEllipse(pen, 1, 1, pictureBoxLogo.Width - 2, pictureBoxLogo.Height - 2);
@@ -144,35 +127,50 @@ namespace AplikasiGilinganPadi
             pictureBoxLogo.Image = bmp;
         }
 
-        // ========== AKTIFKAN SEMUA TOMBOL ==========
         private void EnableAllButtons()
         {
             btnKelolaAntrian.Enabled = true;
+            btnKelolaPetani.Enabled = true;
             btnProsesGiling.Enabled = true;
             btnCatatHasil.Enabled = true;
             btnLaporan.Enabled = true;
             btnRefresh.Enabled = true;
             btnSearch.Enabled = true;
+            btnSearchPetani.Enabled = true;
             txtSearch.Enabled = true;
+            txtSearchPetani.Enabled = true;
 
             btnTambahAntrian.Enabled = true;
             btnEditAntrian.Enabled = true;
             btnHapusAntrian.Enabled = true;
         }
 
-        // ========== TOGGLE SUBMENU KELOLA ANTRIAN ==========
         private void btnKelolaAntrian_Click(object sender, EventArgs e)
         {
             if (panelSubmenuAntrian != null)
             {
                 panelSubmenuAntrian.Visible = !panelSubmenuAntrian.Visible;
+                if (panelSubmenuPetani != null)
+                    panelSubmenuPetani.Visible = false;
                 btnKelolaAntrian.BackColor = panelSubmenuAntrian.Visible ?
-                    System.Drawing.Color.FromArgb(52, 152, 219) :
-                    System.Drawing.Color.FromArgb(41, 128, 185);
+                    Color.FromArgb(52, 152, 219) : Color.FromArgb(41, 128, 185);
+                btnKelolaPetani.BackColor = Color.FromArgb(41, 128, 185);
             }
         }
 
-        // ========== SETUP DATA GRID VIEW ==========
+        private void btnKelolaPetani_Click(object sender, EventArgs e)
+        {
+            if (panelSubmenuPetani != null)
+            {
+                panelSubmenuPetani.Visible = !panelSubmenuPetani.Visible;
+                if (panelSubmenuAntrian != null)
+                    panelSubmenuAntrian.Visible = false;
+                btnKelolaPetani.BackColor = panelSubmenuPetani.Visible ?
+                    Color.FromArgb(52, 152, 219) : Color.FromArgb(41, 128, 185);
+                btnKelolaAntrian.BackColor = Color.FromArgb(41, 128, 185);
+            }
+        }
+
         private void SetupDataGridView()
         {
             dgvAntrian.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -183,7 +181,16 @@ namespace AplikasiGilinganPadi
             dgvAntrian.RowHeadersVisible = false;
         }
 
-        // ========== LOAD DATA ANTRIAN ==========
+        private void SetupDataGridViewPetani()
+        {
+            dgvPetani.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvPetani.MultiSelect = false;
+            dgvPetani.ReadOnly = true;
+            dgvPetani.AllowUserToAddRows = false;
+            dgvPetani.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgvPetani.RowHeadersVisible = false;
+        }
+
         private void LoadDataAntrian()
         {
             try
@@ -192,16 +199,17 @@ namespace AplikasiGilinganPadi
                     conn.Open();
 
                 string query = @"SELECT 
-                                    id_antrian, 
-                                    nomor_antrian, 
-                                    nama_petani, 
-                                    alamat, 
-                                    no_telepon, 
-                                    berat_gabah, 
-                                    tanggal_antrian, 
-                                    status 
-                                FROM Antrian 
-                                ORDER BY nomor_antrian";
+                                    a.id_antrian, 
+                                    a.nomor_antrian, 
+                                    p.nama AS nama_petani, 
+                                    p.alamat, 
+                                    p.no_telepon, 
+                                    a.berat_gabah, 
+                                    a.tanggal_giling, 
+                                    a.status 
+                                FROM Antrian a
+                                JOIN Petani p ON a.id_petani = p.id_petani
+                                ORDER BY a.nomor_antrian";
 
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
                 DataTable dt = new DataTable();
@@ -222,8 +230,8 @@ namespace AplikasiGilinganPadi
                     dgvAntrian.Columns["no_telepon"].HeaderText = "No Telepon";
                 if (dgvAntrian.Columns["berat_gabah"] != null)
                     dgvAntrian.Columns["berat_gabah"].HeaderText = "Berat Gabah (kg)";
-                if (dgvAntrian.Columns["tanggal_antrian"] != null)
-                    dgvAntrian.Columns["tanggal_antrian"].HeaderText = "Tanggal Antrian";
+                if (dgvAntrian.Columns["tanggal_giling"] != null)
+                    dgvAntrian.Columns["tanggal_giling"].HeaderText = "Tanggal Giling";
                 if (dgvAntrian.Columns["status"] != null)
                     dgvAntrian.Columns["status"].HeaderText = "Status";
 
@@ -232,12 +240,121 @@ namespace AplikasiGilinganPadi
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saat memuat data: " + ex.Message, "Error",
+                MessageBox.Show("Error saat memuat data antrian: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // ========== UPDATE TOTAL RECORD ==========
+        private void LoadDataPetani()
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = "SELECT id_petani, nama, alamat, no_telepon, created_at FROM Petani ORDER BY nama";
+                SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dgvPetani.DataSource = dt;
+
+                if (dgvPetani.Columns["id_petani"] != null)
+                    dgvPetani.Columns["id_petani"].Visible = false;
+                if (dgvPetani.Columns["nama"] != null)
+                    dgvPetani.Columns["nama"].HeaderText = "Nama Petani";
+                if (dgvPetani.Columns["alamat"] != null)
+                    dgvPetani.Columns["alamat"].HeaderText = "Alamat";
+                if (dgvPetani.Columns["no_telepon"] != null)
+                    dgvPetani.Columns["no_telepon"].HeaderText = "No Telepon";
+                if (dgvPetani.Columns["created_at"] != null)
+                    dgvPetani.Columns["created_at"].HeaderText = "Tanggal Daftar";
+
+                conn.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saat memuat data petani: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnTambahPetani_Click(object sender, EventArgs e)
+        {
+            FormPetani formPetani = new FormPetani(connectionString, 0);
+            formPetani.ShowDialog();
+            LoadDataPetani();
+        }
+
+        private void btnEditPetani_Click(object sender, EventArgs e)
+        {
+            if (dgvPetani.SelectedRows.Count > 0)
+            {
+                int idPetani = Convert.ToInt32(dgvPetani.SelectedRows[0].Cells["id_petani"].Value);
+                FormPetani formPetani = new FormPetani(connectionString, idPetani);
+                formPetani.ShowDialog();
+                LoadDataPetani();
+            }
+            else
+            {
+                MessageBox.Show("Silakan pilih petani yang akan diedit!", "Peringatan",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnHapusPetani_Click(object sender, EventArgs e)
+        {
+            if (dgvPetani.SelectedRows.Count > 0)
+            {
+                int idPetani = Convert.ToInt32(dgvPetani.SelectedRows[0].Cells["id_petani"].Value);
+                string namaPetani = dgvPetani.SelectedRows[0].Cells["nama"].Value.ToString();
+
+                DialogResult confirm = MessageBox.Show(
+                    $"Yakin ingin menghapus petani '{namaPetani}'?\n\nData petani yang memiliki antrian tidak dapat dihapus!",
+                    "Konfirmasi Hapus",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (confirm == DialogResult.Yes)
+                {
+                    try
+                    {
+                        if (conn.State == ConnectionState.Closed)
+                            conn.Open();
+
+                        string query = "DELETE FROM Petani WHERE id_petani = @id";
+                        SqlCommand cmd = new SqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@id", idPetani);
+                        int result = cmd.ExecuteNonQuery();
+
+                        conn.Close();
+
+                        if (result > 0)
+                        {
+                            MessageBox.Show("Data petani berhasil dihapus!", "Sukses",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            LoadDataPetani();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Gagal menghapus data! Pastikan petani tidak memiliki antrian.", "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error saat menghapus data: " + ex.Message, "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Silakan pilih petani yang akan dihapus!", "Peringatan",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         private void UpdateTotalRecord()
         {
             try
@@ -254,7 +371,7 @@ namespace AplikasiGilinganPadi
                 SqlCommand cmdMenunggu = new SqlCommand(queryMenunggu, conn);
                 int menunggu = Convert.ToInt32(cmdMenunggu.ExecuteScalar());
 
-                string queryDiproses = "SELECT COUNT(*) FROM Antrian WHERE status = 'sedang diproses'";
+                string queryDiproses = "SELECT COUNT(*) FROM Antrian WHERE status = 'proses'";
                 SqlCommand cmdDiproses = new SqlCommand(queryDiproses, conn);
                 int diproses = Convert.ToInt32(cmdDiproses.ExecuteScalar());
 
@@ -274,7 +391,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== SET WELCOME MESSAGE ==========
         private void SetWelcomeMessage(string nama)
         {
             lblWelcome.Text = $"Selamat Datang, {nama}";
@@ -287,7 +403,6 @@ namespace AplikasiGilinganPadi
             timer.Start();
         }
 
-        // ========== PENCARIAN DATA ==========
         private void btnSearch_Click(object sender, EventArgs e)
         {
             string keyword = txtSearch.Text.Trim();
@@ -304,19 +419,20 @@ namespace AplikasiGilinganPadi
                     conn.Open();
 
                 string query = @"SELECT 
-                                    id_antrian, 
-                                    nomor_antrian, 
-                                    nama_petani, 
-                                    alamat, 
-                                    no_telepon, 
-                                    berat_gabah, 
-                                    tanggal_antrian, 
-                                    status 
-                                FROM Antrian 
-                                WHERE nama_petani LIKE @keyword 
-                                   OR CAST(nomor_antrian AS VARCHAR) LIKE @keyword
-                                   OR no_telepon LIKE @keyword
-                                ORDER BY nomor_antrian";
+                                    a.id_antrian, 
+                                    a.nomor_antrian, 
+                                    p.nama AS nama_petani, 
+                                    p.alamat, 
+                                    p.no_telepon, 
+                                    a.berat_gabah, 
+                                    a.tanggal_giling, 
+                                    a.status 
+                                FROM Antrian a
+                                JOIN Petani p ON a.id_petani = p.id_petani
+                                WHERE p.nama LIKE @keyword 
+                                   OR CAST(a.nomor_antrian AS VARCHAR) LIKE @keyword
+                                   OR p.no_telepon LIKE @keyword
+                                ORDER BY a.nomor_antrian";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@keyword", "%" + keyword + "%");
@@ -349,7 +465,55 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== TAMBAH ANTRIAN ==========
+        private void btnSearchPetani_Click(object sender, EventArgs e)
+        {
+            string keyword = txtSearchPetani.Text.Trim();
+
+            if (string.IsNullOrEmpty(keyword))
+            {
+                LoadDataPetani();
+                return;
+            }
+
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = @"SELECT id_petani, nama, alamat, no_telepon, created_at 
+                                FROM Petani 
+                                WHERE nama LIKE @keyword 
+                                   OR no_telepon LIKE @keyword
+                                   OR alamat LIKE @keyword
+                                ORDER BY nama";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@keyword", "%" + keyword + "%");
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dgvPetani.DataSource = dt;
+
+                if (dgvPetani.Columns["id_petani"] != null)
+                    dgvPetani.Columns["id_petani"].Visible = false;
+
+                conn.Close();
+
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("Data petani tidak ditemukan!", "Info",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saat mencari data petani: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void btnTambahAntrian_Click(object sender, EventArgs e)
         {
             FormAntrian formAntrian = new FormAntrian(connectionString, 0);
@@ -363,9 +527,33 @@ namespace AplikasiGilinganPadi
             if (dgvAntrian.SelectedRows.Count > 0)
             {
                 int idAntrian = Convert.ToInt32(dgvAntrian.SelectedRows[0].Cells["id_antrian"].Value);
+                string statusLama = dgvAntrian.SelectedRows[0].Cells["status"].Value.ToString();
+
                 FormAntrian formAntrian = new FormAntrian(connectionString, idAntrian);
                 formAntrian.ShowDialog();
+
                 LoadDataAntrian();
+
+                string statusBaru = "";
+                try
+                {
+                    if (conn.State == ConnectionState.Closed)
+                        conn.Open();
+                    string queryStatus = "SELECT status FROM Antrian WHERE id_antrian = @id";
+                    SqlCommand cmdStatus = new SqlCommand(queryStatus, conn);
+                    cmdStatus.Parameters.AddWithValue("@id", idAntrian);
+                    statusBaru = cmdStatus.ExecuteScalar()?.ToString();
+                    conn.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error ambil status: " + ex.Message);
+                }
+
+                if (statusBaru == "selesai" && statusLama != "selesai")
+                {
+                    CekDanBukaFormHasilGiling(idAntrian);
+                }
             }
             else
             {
@@ -434,7 +622,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== PROSES GILING ==========
+        // ========== PROSES GILING (DIPERBAIKI) ==========
         private void btnProsesGiling_Click(object sender, EventArgs e)
         {
             if (dgvAntrian.SelectedRows.Count > 0)
@@ -443,76 +631,189 @@ namespace AplikasiGilinganPadi
                 string statusSaatIni = dgvAntrian.SelectedRows[0].Cells["status"].Value.ToString();
                 string namaPetani = dgvAntrian.SelectedRows[0].Cells["nama_petani"].Value.ToString();
 
-                string statusBaru = "";
-                string pesan = "";
-
                 if (statusSaatIni == "menunggu")
                 {
-                    statusBaru = "sedang diproses";
-                    pesan = $"Memproses antrian '{namaPetani}'?\n\nStatus akan diubah menjadi 'SEDANG DIPROSES'.";
+                    DialogResult confirm = MessageBox.Show(
+                        $"Memproses antrian '{namaPetani}'?\n\nStatus akan diubah menjadi 'PROSES'.",
+                        "Konfirmasi Proses",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (confirm == DialogResult.Yes)
+                    {
+                        try
+                        {
+                            if (conn.State == ConnectionState.Closed)
+                                conn.Open();
+
+                            string query = "UPDATE Antrian SET status = 'proses' WHERE id_antrian = @id";
+                            SqlCommand cmd = new SqlCommand(query, conn);
+                            cmd.Parameters.AddWithValue("@id", idAntrian);
+                            cmd.ExecuteNonQuery();
+
+                            conn.Close();
+
+                            MessageBox.Show("Status antrian berhasil diubah menjadi 'PROSES'!",
+                                "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            LoadDataAntrian();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error saat memproses: " + ex.Message, "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
                 }
-                else if (statusSaatIni == "sedang diproses")
+                else if (statusSaatIni == "proses")
                 {
-                    statusBaru = "selesai";
-                    pesan = $"Menyelesaikan proses gilingan '{namaPetani}'?\n\nStatus akan diubah menjadi 'SELESAI'.";
+                    // Cek apakah sudah pernah dicatat hasil gilingnya
+                    int sudahAda = 0;
+                    try
+                    {
+                        if (conn.State == ConnectionState.Closed)
+                            conn.Open();
+                        string cekQuery = "SELECT COUNT(*) FROM HasilGiling WHERE id_antrian = @id";
+                        SqlCommand cekCmd = new SqlCommand(cekQuery, conn);
+                        cekCmd.Parameters.AddWithValue("@id", idAntrian);
+                        sudahAda = Convert.ToInt32(cekCmd.ExecuteScalar());
+                        conn.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error: " + ex.Message);
+                    }
+
+                    if (sudahAda > 0)
+                    {
+                        // Jika sudah ada hasil giling, langsung update status menjadi selesai
+                        DialogResult confirm = MessageBox.Show(
+                            $"Antrian '{namaPetani}' sudah memiliki catatan hasil giling.\n\nApakah ingin mengubah status menjadi 'SELESAI'?",
+                            "Konfirmasi Selesai",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (confirm == DialogResult.Yes)
+                        {
+                            try
+                            {
+                                if (conn.State == ConnectionState.Closed)
+                                    conn.Open();
+
+                                string query = "UPDATE Antrian SET status = 'selesai' WHERE id_antrian = @id";
+                                SqlCommand cmd = new SqlCommand(query, conn);
+                                cmd.Parameters.AddWithValue("@id", idAntrian);
+                                cmd.ExecuteNonQuery();
+
+                                conn.Close();
+
+                                MessageBox.Show("Status antrian berhasil diubah menjadi 'SELESAI'!",
+                                    "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                LoadDataAntrian();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error saat memproses: " + ex.Message, "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Belum ada hasil giling, buka FormHasilGiling
+                        DialogResult confirm = MessageBox.Show(
+                            $"Menyelesaikan proses gilingan '{namaPetani}'?\n\nAnda akan diminta mencatat hasil giling.",
+                            "Konfirmasi Selesai",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (confirm == DialogResult.Yes)
+                        {
+                            FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
+                            DialogResult hasilForm = formHasil.ShowDialog();
+
+                            if (hasilForm == DialogResult.OK)
+                            {
+                                // User menyimpan hasil giling, update status menjadi selesai
+                                try
+                                {
+                                    if (conn.State == ConnectionState.Closed)
+                                        conn.Open();
+
+                                    string query = "UPDATE Antrian SET status = 'selesai' WHERE id_antrian = @id";
+                                    SqlCommand cmd = new SqlCommand(query, conn);
+                                    cmd.Parameters.AddWithValue("@id", idAntrian);
+                                    cmd.ExecuteNonQuery();
+
+                                    conn.Close();
+
+                                    MessageBox.Show("Hasil giling berhasil dicatat!\nStatus antrian berubah menjadi 'SELESAI'.",
+                                        "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                    LoadDataAntrian();
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show("Error saat update status: " + ex.Message, "Error",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }
+                            else
+                            {
+                                // User membatalkan, status tetap proses
+                                MessageBox.Show("Status antrian tetap 'PROSES'.\nSilakan catat hasil giling nanti melalui menu 'Catat Hasil Giling'.",
+                                    "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                    }
                 }
                 else
                 {
                     MessageBox.Show("Antrian sudah selesai diproses!", "Info",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                DialogResult confirm = MessageBox.Show(pesan, "Konfirmasi Proses",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-                if (confirm == DialogResult.Yes)
-                {
-                    try
-                    {
-                        if (conn.State == ConnectionState.Closed)
-                            conn.Open();
-
-                        string query = "UPDATE Antrian SET status = @status WHERE id_antrian = @id";
-                        SqlCommand cmd = new SqlCommand(query, conn);
-                        cmd.Parameters.AddWithValue("@status", statusBaru);
-                        cmd.Parameters.AddWithValue("@id", idAntrian);
-                        cmd.ExecuteNonQuery();
-
-                        conn.Close();
-
-                        MessageBox.Show($"Status antrian berhasil diubah menjadi '{statusBaru}'!",
-                            "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        LoadDataAntrian();
-
-                        if (statusBaru == "selesai")
-                        {
-                            DialogResult hasil = MessageBox.Show(
-                                "Apakah ingin mencatat hasil giling sekarang?",
-                                "Catat Hasil Giling",
-                                MessageBoxButtons.YesNo,
-                                MessageBoxIcon.Question);
-
-                            if (hasil == DialogResult.Yes)
-                            {
-                                FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
-                                formHasil.ShowDialog();
-                                LoadDataAntrian();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error saat memproses: " + ex.Message, "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
                 }
             }
             else
             {
                 MessageBox.Show("Silakan pilih antrian yang akan diproses!", "Peringatan",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        // ========== CEK DAN BUKA FORM HASIL GILING ==========
+        private void CekDanBukaFormHasilGiling(int idAntrian)
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string cekQuery = "SELECT COUNT(*) FROM HasilGiling WHERE id_antrian = @id";
+                SqlCommand cekCmd = new SqlCommand(cekQuery, conn);
+                cekCmd.Parameters.AddWithValue("@id", idAntrian);
+                int sudahAda = Convert.ToInt32(cekCmd.ExecuteScalar());
+                conn.Close();
+
+                if (sudahAda == 0)
+                {
+                    DialogResult hasil = MessageBox.Show(
+                        "Status antrian telah diubah menjadi SELESAI.\n\nApakah ingin mencatat hasil giling sekarang?",
+                        "Catat Hasil Giling",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (hasil == DialogResult.Yes)
+                    {
+                        FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
+                        formHasil.ShowDialog();
+                        LoadDataAntrian();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
             }
         }
 
@@ -531,6 +832,21 @@ namespace AplikasiGilinganPadi
                     return;
                 }
 
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+                string cekQuery = "SELECT COUNT(*) FROM HasilGiling WHERE id_antrian = @id";
+                SqlCommand cekCmd = new SqlCommand(cekQuery, conn);
+                cekCmd.Parameters.AddWithValue("@id", idAntrian);
+                int sudahAda = Convert.ToInt32(cekCmd.ExecuteScalar());
+                conn.Close();
+
+                if (sudahAda > 0)
+                {
+                    MessageBox.Show("Hasil giling untuk antrian ini sudah pernah dicatat!",
+                        "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
                 FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
                 formHasil.ShowDialog();
                 LoadDataAntrian();
@@ -542,23 +858,21 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== LAPORAN ==========
         private void btnLaporan_Click(object sender, EventArgs e)
         {
             FormLaporan formLaporan = new FormLaporan(connectionString);
             formLaporan.ShowDialog();
         }
 
-        // ========== REFRESH ==========
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadDataAntrian();
             txtSearch.Clear();
+            txtSearchPetani.Clear();
             MessageBox.Show("Data berhasil direfresh!", "Info",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        // ========== LOGOUT ==========
         private void btnLogout_Click(object sender, EventArgs e)
         {
             DialogResult confirm = MessageBox.Show("Yakin ingin logout dari sistem?",
@@ -575,7 +889,6 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== CELL CLICK ==========
         private void dgvAntrian_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -589,7 +902,15 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== FORM CLOSING ==========
+        private void dgvPetani_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                string namaPetani = dgvPetani.Rows[e.RowIndex].Cells["nama"].Value.ToString();
+                lblSelectedPetaniInfo.Text = $"👨‍🌾 Terpilih: {namaPetani}";
+            }
+        }
+
         private void FormUtama_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)
@@ -597,6 +918,19 @@ namespace AplikasiGilinganPadi
                 conn.Close();
                 conn.Dispose();
             }
+        }
+
+        private void panelSubmenuPetani_VisibleChanged(object sender, EventArgs e)
+        {
+            if (panelSubmenuPetani.Visible)
+            {
+                LoadDataPetani();
+            }
+        }
+
+        private void btnLihatPetani_Click(object sender, EventArgs e)
+        {
+            LoadDataPetani();
         }
     }
 }
