@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace AplikasiGilinganPadi
@@ -21,6 +22,7 @@ namespace AplikasiGilinganPadi
             LoadDataAntrian();
         }
 
+        // ========== LOAD DATA ANTRIAN (JOIN DENGAN PETANI) ==========
         private void LoadDataAntrian()
         {
             try
@@ -28,7 +30,15 @@ namespace AplikasiGilinganPadi
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                string query = "SELECT nomor_antrian, nama_petani, alamat, no_telepon, berat_gabah FROM Antrian WHERE id_antrian = @id";
+                string query = @"SELECT 
+                                    a.nomor_antrian, 
+                                    p.nama AS nama_petani, 
+                                    p.alamat, 
+                                    p.no_telepon, 
+                                    a.berat_gabah 
+                                FROM Antrian a
+                                INNER JOIN Petani p ON a.id_petani = p.id_petani
+                                WHERE a.id_antrian = @id";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@id", idAntrian);
                 SqlDataReader reader = cmd.ExecuteReader();
@@ -40,14 +50,15 @@ namespace AplikasiGilinganPadi
                     txtAlamat.Text = reader["alamat"].ToString();
                     txtNoTelepon.Text = reader["no_telepon"].ToString();
                     beratGabah = Convert.ToDecimal(reader["berat_gabah"]);
-                    txtBeratGabah.Text = beratGabah.ToString("F2");
 
+                    // Format dengan koma
+                    txtBeratGabah.Text = FormatDecimalWithComma(beratGabah);
                     txtBerasDihasilkan.Clear();
                     txtDedak.Clear();
 
-                    lblInfoMaksimal.Text = $"⚠️ Maksimal total beras + dedak = {beratGabah:F2} kg";
-                    lblInfoBatasBeras.Text = $"Max: {beratGabah:F2} kg";
-                    lblInfoBatasDedak.Text = $"Max: {beratGabah:F2} kg";
+                    lblInfoMaksimal.Text = $"⚠️ Maksimal total beras + dedak = {FormatDecimalWithComma(beratGabah)} kg";
+                    lblInfoBatasBeras.Text = $"Max: {FormatDecimalWithComma(beratGabah)} kg";
+                    lblInfoBatasDedak.Text = $"Max: {FormatDecimalWithComma(beratGabah)} kg";
 
                     txtBerasDihasilkan.Focus();
                 }
@@ -61,49 +72,46 @@ namespace AplikasiGilinganPadi
             }
         }
 
-        // ========== CEK DAN BATASI NILAI ==========
+        // ========== CEK DAN BATASI NILAI (DENGAN KOMA) ==========
         private void BatasiNilai(TextBox textBox, decimal batasMaksimal)
         {
             if (string.IsNullOrEmpty(textBox.Text))
                 return;
 
-            if (decimal.TryParse(textBox.Text, out decimal nilai))
+            decimal nilai = ParseDecimalWithComma(textBox.Text);
+
+            if (nilai > batasMaksimal)
             {
-                if (nilai > batasMaksimal)
-                {
-                    textBox.Text = batasMaksimal.ToString("F2");
-                    textBox.Select(textBox.Text.Length, 0);
-                    MessageBox.Show($"⚠️ Nilai tidak boleh melebihi {batasMaksimal:F2} kg!",
-                        "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else if (nilai < 0)
-                {
-                    textBox.Text = "0";
-                    textBox.Select(textBox.Text.Length, 0);
-                }
+                textBox.Text = FormatDecimalWithComma(batasMaksimal);
+                textBox.Select(textBox.Text.Length, 0);
+                MessageBox.Show($"⚠️ Nilai tidak boleh melebihi {FormatDecimalWithComma(batasMaksimal)} kg!",
+                    "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else if (nilai < 0)
+            {
+                textBox.Text = "0";
+                textBox.Select(textBox.Text.Length, 0);
             }
         }
 
-        // ========== UPDATE STATUS WARNA ==========
+        // ========== UPDATE STATUS WARNA (DENGAN KOMA) ==========
         private void UpdateStatusWarna()
         {
             // Cek Beras
             if (!string.IsNullOrEmpty(txtBerasDihasilkan.Text))
             {
-                if (decimal.TryParse(txtBerasDihasilkan.Text, out decimal beras))
+                decimal beras = ParseDecimalWithComma(txtBerasDihasilkan.Text);
+                if (beras > beratGabah)
                 {
-                    if (beras > beratGabah)
-                    {
-                        txtBerasDihasilkan.BackColor = System.Drawing.Color.LightCoral;
-                        lblStatusBeras.Text = "❌ Melebihi batas!";
-                        lblStatusBeras.ForeColor = System.Drawing.Color.Red;
-                    }
-                    else
-                    {
-                        txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
-                        lblStatusBeras.Text = "OK";
-                        lblStatusBeras.ForeColor = System.Drawing.Color.Green;
-                    }
+                    txtBerasDihasilkan.BackColor = System.Drawing.Color.LightCoral;
+                    lblStatusBeras.Text = "❌ Melebihi batas!";
+                    lblStatusBeras.ForeColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
+                    lblStatusBeras.Text = "OK";
+                    lblStatusBeras.ForeColor = System.Drawing.Color.Green;
                 }
             }
             else
@@ -115,20 +123,18 @@ namespace AplikasiGilinganPadi
             // Cek Dedak
             if (!string.IsNullOrEmpty(txtDedak.Text))
             {
-                if (decimal.TryParse(txtDedak.Text, out decimal dedak))
+                decimal dedak = ParseDecimalWithComma(txtDedak.Text);
+                if (dedak > beratGabah)
                 {
-                    if (dedak > beratGabah)
-                    {
-                        txtDedak.BackColor = System.Drawing.Color.LightCoral;
-                        lblStatusDedak.Text = "❌ Melebihi batas!";
-                        lblStatusDedak.ForeColor = System.Drawing.Color.Red;
-                    }
-                    else
-                    {
-                        txtDedak.BackColor = System.Drawing.Color.White;
-                        lblStatusDedak.Text = "OK";
-                        lblStatusDedak.ForeColor = System.Drawing.Color.Green;
-                    }
+                    txtDedak.BackColor = System.Drawing.Color.LightCoral;
+                    lblStatusDedak.Text = "❌ Melebihi batas!";
+                    lblStatusDedak.ForeColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    txtDedak.BackColor = System.Drawing.Color.White;
+                    lblStatusDedak.Text = "OK";
+                    lblStatusDedak.ForeColor = System.Drawing.Color.Green;
                 }
             }
             else
@@ -140,20 +146,19 @@ namespace AplikasiGilinganPadi
             // Cek Total
             if (!string.IsNullOrEmpty(txtBerasDihasilkan.Text) && !string.IsNullOrEmpty(txtDedak.Text))
             {
-                if (decimal.TryParse(txtBerasDihasilkan.Text, out decimal beras) &&
-                    decimal.TryParse(txtDedak.Text, out decimal dedak))
+                decimal beras = ParseDecimalWithComma(txtBerasDihasilkan.Text);
+                decimal dedak = ParseDecimalWithComma(txtDedak.Text);
+                decimal total = beras + dedak;
+
+                if (total > beratGabah)
                 {
-                    decimal total = beras + dedak;
-                    if (total > beratGabah)
-                    {
-                        lblStatusTotal.Text = $"❌ Total {total:F2} kg melebihi {beratGabah:F2} kg!";
-                        lblStatusTotal.ForeColor = System.Drawing.Color.Red;
-                    }
-                    else
-                    {
-                        lblStatusTotal.Text = $"Total {total:F2} kg (OK)";
-                        lblStatusTotal.ForeColor = System.Drawing.Color.Green;
-                    }
+                    lblStatusTotal.Text = $"❌ Total {FormatDecimalWithComma(total)} kg melebihi {FormatDecimalWithComma(beratGabah)} kg!";
+                    lblStatusTotal.ForeColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    lblStatusTotal.Text = $"✅ Total {FormatDecimalWithComma(total)} kg dari {FormatDecimalWithComma(beratGabah)} kg gabah";
+                    lblStatusTotal.ForeColor = System.Drawing.Color.Green;
                 }
             }
             else
@@ -175,29 +180,20 @@ namespace AplikasiGilinganPadi
             UpdateStatusWarna();
         }
 
-        // ========== MENCEGAH INPUT TIDAK VALID ==========
+        // ========== KEYPRESS DENGAN DUKUNGAN KOMA ==========
         private void txtBerasDihasilkan_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Izinkan backspace, delete, enter, tab
             if (char.IsControl(e.KeyChar))
                 return;
 
-            // Izinkan angka dan titik
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.')
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != '.')
             {
                 e.Handled = true;
                 return;
             }
 
-            // Cegah titik jika sudah ada titik
-            if (e.KeyChar == '.' && txtBerasDihasilkan.Text.Contains("."))
-            {
-                e.Handled = true;
-                return;
-            }
-
-            // Cegah titik di awal
-            if (e.KeyChar == '.' && string.IsNullOrEmpty(txtBerasDihasilkan.Text))
+            TextBox txt = sender as TextBox;
+            if ((e.KeyChar == ',' || e.KeyChar == '.') && (txt.Text.Contains(",") || txt.Text.Contains(".")))
             {
                 e.Handled = true;
                 return;
@@ -209,26 +205,21 @@ namespace AplikasiGilinganPadi
             if (char.IsControl(e.KeyChar))
                 return;
 
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != '.')
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != '.')
             {
                 e.Handled = true;
                 return;
             }
 
-            if (e.KeyChar == '.' && txtDedak.Text.Contains("."))
-            {
-                e.Handled = true;
-                return;
-            }
-
-            if (e.KeyChar == '.' && string.IsNullOrEmpty(txtDedak.Text))
+            TextBox txt = sender as TextBox;
+            if ((e.KeyChar == ',' || e.KeyChar == '.') && (txt.Text.Contains(",") || txt.Text.Contains(".")))
             {
                 e.Handled = true;
                 return;
             }
         }
 
-        // ========== MENCEGAH PASTE (CTRL+V) YANG TIDAK VALID ==========
+        // ========== PASTE (CTRL+V) DENGAN DUKUNGAN KOMA ==========
         private void txtBerasDihasilkan_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.V)
@@ -236,21 +227,15 @@ namespace AplikasiGilinganPadi
                 e.SuppressKeyPress = true;
                 string clipboardText = Clipboard.GetText();
 
-                if (decimal.TryParse(clipboardText, out decimal nilai))
+                decimal nilai = ParseDecimalWithComma(clipboardText);
+
+                if (nilai <= beratGabah && nilai >= 0)
                 {
-                    if (nilai <= beratGabah && nilai >= 0)
-                    {
-                        txtBerasDihasilkan.Text = nilai.ToString("F2");
-                    }
-                    else
-                    {
-                        MessageBox.Show($"❌ Nilai tidak valid! Maksimal {beratGabah:F2} kg",
-                            "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    txtBerasDihasilkan.Text = FormatDecimalWithComma(nilai);
                 }
                 else
                 {
-                    MessageBox.Show("❌ Harap masukkan angka yang valid!",
+                    MessageBox.Show($"❌ Nilai tidak valid! Maksimal {FormatDecimalWithComma(beratGabah)} kg",
                         "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
@@ -263,21 +248,15 @@ namespace AplikasiGilinganPadi
                 e.SuppressKeyPress = true;
                 string clipboardText = Clipboard.GetText();
 
-                if (decimal.TryParse(clipboardText, out decimal nilai))
+                decimal nilai = ParseDecimalWithComma(clipboardText);
+
+                if (nilai <= beratGabah && nilai >= 0)
                 {
-                    if (nilai <= beratGabah && nilai >= 0)
-                    {
-                        txtDedak.Text = nilai.ToString("F2");
-                    }
-                    else
-                    {
-                        MessageBox.Show($"❌ Nilai tidak valid! Maksimal {beratGabah:F2} kg",
-                            "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    txtDedak.Text = FormatDecimalWithComma(nilai);
                 }
                 else
                 {
-                    MessageBox.Show("❌ Harap masukkan angka yang valid!",
+                    MessageBox.Show($"❌ Nilai tidak valid! Maksimal {FormatDecimalWithComma(beratGabah)} kg",
                         "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
@@ -302,23 +281,8 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            decimal berasDihasilkan, dedak;
-
-            if (!decimal.TryParse(txtBerasDihasilkan.Text, out berasDihasilkan))
-            {
-                MessageBox.Show("❌ Format Beras tidak valid!", "Validasi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtBerasDihasilkan.Focus();
-                return;
-            }
-
-            if (!decimal.TryParse(txtDedak.Text, out dedak))
-            {
-                MessageBox.Show("❌ Format Dedak tidak valid!", "Validasi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtDedak.Focus();
-                return;
-            }
+            decimal berasDihasilkan = ParseDecimalWithComma(txtBerasDihasilkan.Text);
+            decimal dedak = ParseDecimalWithComma(txtDedak.Text);
 
             if (berasDihasilkan < 0 || dedak < 0)
             {
@@ -329,7 +293,7 @@ namespace AplikasiGilinganPadi
 
             if (berasDihasilkan > beratGabah)
             {
-                MessageBox.Show($"❌ Beras tidak boleh melebihi {beratGabah:F2} kg!", "Validasi",
+                MessageBox.Show($"❌ Beras tidak boleh melebihi {FormatDecimalWithComma(beratGabah)} kg!", "Validasi",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtBerasDihasilkan.Focus();
                 return;
@@ -337,7 +301,7 @@ namespace AplikasiGilinganPadi
 
             if (dedak > beratGabah)
             {
-                MessageBox.Show($"❌ Dedak tidak boleh melebihi {beratGabah:F2} kg!", "Validasi",
+                MessageBox.Show($"❌ Dedak tidak boleh melebihi {FormatDecimalWithComma(beratGabah)} kg!", "Validasi",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtDedak.Focus();
                 return;
@@ -345,7 +309,7 @@ namespace AplikasiGilinganPadi
 
             if (berasDihasilkan + dedak > beratGabah)
             {
-                MessageBox.Show($"❌ Total Beras + Dedak ({berasDihasilkan + dedak:F2} kg) melebihi Berat Gabah ({beratGabah:F2} kg)!",
+                MessageBox.Show($"❌ Total Beras + Dedak ({FormatDecimalWithComma(berasDihasilkan + dedak)} kg) melebihi Berat Gabah ({FormatDecimalWithComma(beratGabah)} kg)!",
                     "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -362,6 +326,7 @@ namespace AplikasiGilinganPadi
 
                 if (exists > 0)
                 {
+                    // UPDATE - Hanya update beras dan dedak
                     string query = @"UPDATE HasilGiling SET 
                                     beras_dihasilkan = @beras, 
                                     dedak = @dedak 
@@ -377,15 +342,13 @@ namespace AplikasiGilinganPadi
                 }
                 else
                 {
+                    // INSERT - Hanya id_antrian, beras, dedak
                     string query = @"INSERT INTO HasilGiling 
-                                    (id_antrian, nama_petani, alamat, no_telepon, beras_dihasilkan, dedak) 
+                                    (id_antrian, beras_dihasilkan, dedak) 
                                     VALUES 
-                                    (@id, @nama, @alamat, @telp, @beras, @dedak)";
+                                    (@id, @beras, @dedak)";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@id", idAntrian);
-                    cmd.Parameters.AddWithValue("@nama", txtNamaPetani.Text);
-                    cmd.Parameters.AddWithValue("@alamat", txtAlamat.Text);
-                    cmd.Parameters.AddWithValue("@telp", txtNoTelepon.Text);
                     cmd.Parameters.AddWithValue("@beras", berasDihasilkan);
                     cmd.Parameters.AddWithValue("@dedak", dedak);
                     cmd.ExecuteNonQuery();
@@ -419,6 +382,25 @@ namespace AplikasiGilinganPadi
             {
                 this.Close();
             }
+        }
+
+        // ========== KONVERSI ANGKA DENGAN DUKUNGAN KOMA ==========
+        private decimal ParseDecimalWithComma(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return 0;
+
+            string normalized = input.Trim().Replace(',', '.');
+
+            if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
+                return result;
+
+            return 0;
+        }
+
+        private string FormatDecimalWithComma(decimal value)
+        {
+            return value.ToString("#,0.##", new CultureInfo("id-ID"));
         }
 
         private void FormHasilGiling_FormClosing(object sender, FormClosingEventArgs e)
