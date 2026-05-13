@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Globalization;
 using System.Windows.Forms;
 
 namespace AplikasiGilinganPadi
@@ -134,11 +133,7 @@ namespace AplikasiGilinganPadi
                 {
                     idPetaniTerpilih = reader.GetInt32(1);
                     txtNomorAntrian.Text = reader["nomor_antrian"].ToString();
-
-                    // Format angka dengan koma
-                    decimal beratGabah = Convert.ToDecimal(reader["berat_gabah"]);
-                    txtBeratGabah.Text = FormatDecimalWithComma(beratGabah);
-
+                    txtBeratGabah.Text = reader["berat_gabah"].ToString();
                     tanggalAwal = Convert.ToDateTime(reader["tanggal_giling"]);
                     dtpTanggal.Value = tanggalAwal;
                     cmbStatus.SelectedItem = reader["status"].ToString();
@@ -217,12 +212,10 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
-            // Parse angka dengan dukungan koma
-            decimal beratGabah = ParseDecimalWithComma(txtBeratGabah.Text);
-
-            if (beratGabah <= 0)
+            decimal beratGabah;
+            if (!decimal.TryParse(txtBeratGabah.Text, out beratGabah) || beratGabah <= 0)
             {
-                MessageBox.Show("❌ Berat Gabah harus berupa angka positif!\nContoh: 100,5 atau 100.5", "Validasi",
+                MessageBox.Show("❌ Berat Gabah harus berupa angka positif!\nContoh: 100.5", "Validasi",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtBeratGabah.Focus();
                 return;
@@ -299,47 +292,15 @@ namespace AplikasiGilinganPadi
                 this.Close();
         }
 
-        // ========== KONVERSI ANGKA DENGAN DUKUNGAN KOMA ==========
-        private decimal ParseDecimalWithComma(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-                return 0;
-
-            // Ganti koma dengan titik untuk parsing
-            string normalized = input.Trim().Replace(',', '.');
-
-            if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
-                return result;
-
-            return 0;
-        }
-
-        private string FormatDecimalWithComma(decimal value)
-        {
-            // Format dengan koma sebagai pemisah desimal
-            return value.ToString("#,0.##", new CultureInfo("id-ID"));
-        }
-
-        // ========== KEYPRESS UNTUK BERAT (DENGAN KOMA) ==========
         private void txtBeratGabah_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Izinkan backspace, delete, enter, tab
-            if (char.IsControl(e.KeyChar))
-                return;
-
-            // Izinkan angka, koma, dan titik
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != '.')
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
             {
                 e.Handled = true;
-                return;
             }
-
-            // Cegah lebih dari satu koma atau titik
-            TextBox txt = sender as TextBox;
-            if ((e.KeyChar == ',' || e.KeyChar == '.') && (txt.Text.Contains(",") || txt.Text.Contains(".")))
+            if (e.KeyChar == '.' && (sender as TextBox).Text.Contains("."))
             {
                 e.Handled = true;
-                return;
             }
         }
 
