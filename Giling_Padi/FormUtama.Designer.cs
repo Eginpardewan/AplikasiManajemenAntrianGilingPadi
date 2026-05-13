@@ -42,7 +42,7 @@ namespace AplikasiGilinganPadi
         private Button btnEditPetani;
         private Button btnHapusPetani;
 
-        // ========== STEP 2: BINDING NAVIGATOR ==========
+        // SATU Binding Navigator untuk SEMUA data
         private BindingNavigator bindingNavigator1;
         private ToolStripButton bindingNavigatorAddNewItem;
         private ToolStripLabel bindingNavigatorCountItem;
@@ -103,7 +103,7 @@ namespace AplikasiGilinganPadi
             this.lblWelcome = new Label();
             this.lblDateTime = new Label();
 
-            // ========== STEP 2: BINDING NAVIGATOR COMPONENTS ==========
+            // SATU Binding Navigator Components
             this.bindingNavigator1 = new BindingNavigator(this.components);
             this.bindingNavigatorAddNewItem = new ToolStripButton();
             this.bindingNavigatorCountItem = new ToolStripLabel();
@@ -219,23 +219,23 @@ namespace AplikasiGilinganPadi
             this.lblDateTime.TextAlign = ContentAlignment.MiddleRight;
             this.lblDateTime.Text = DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss");
 
-            // ========== STEP 2: SATU BINDING NAVIGATOR ==========
+            // ========== SATU BINDING NAVIGATOR ==========
             this.bindingNavigator1.AddNewItem = this.bindingNavigatorAddNewItem;
             this.bindingNavigator1.CountItem = this.bindingNavigatorCountItem;
             this.bindingNavigator1.DeleteItem = this.bindingNavigatorDeleteItem;
             this.bindingNavigator1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.bindingNavigator1.Items.AddRange(new ToolStripItem[] {
-                this.bindingNavigatorMoveFirstItem,
-                this.bindingNavigatorMovePreviousItem,
-                this.bindingNavigatorSeparator,
-                this.bindingNavigatorPositionItem,
-                this.bindingNavigatorCountItem,
-                this.bindingNavigatorSeparator1,
-                this.bindingNavigatorMoveNextItem,
-                this.bindingNavigatorMoveLastItem,
-                this.bindingNavigatorSeparator2,
-                this.bindingNavigatorAddNewItem,
-                this.bindingNavigatorDeleteItem});
+            this.bindingNavigatorMoveFirstItem,
+            this.bindingNavigatorMovePreviousItem,
+            this.bindingNavigatorSeparator,
+            this.bindingNavigatorPositionItem,
+            this.bindingNavigatorCountItem,
+            this.bindingNavigatorSeparator1,
+            this.bindingNavigatorMoveNextItem,
+            this.bindingNavigatorMoveLastItem,
+            this.bindingNavigatorSeparator2,
+            this.bindingNavigatorAddNewItem,
+            this.bindingNavigatorDeleteItem});
             this.bindingNavigator1.Dock = DockStyle.Top;
             this.bindingNavigator1.Location = new System.Drawing.Point(0, 65);
             this.bindingNavigator1.MoveFirstItem = this.bindingNavigatorMoveFirstItem;
@@ -372,6 +372,7 @@ namespace AplikasiGilinganPadi
             this.btnKelolaPetani.Location = new System.Drawing.Point(3, 128);
             this.btnKelolaPetani.Size = new System.Drawing.Size(160, 30);
             this.btnKelolaPetani.Text = "👨‍🌾 Kelola Petani";
+            this.btnKelolaPetani.UseVisualStyleBackColor = false;
             this.btnKelolaPetani.Click += new EventHandler(this.btnKelolaPetani_Click);
 
             // panelSubmenuPetani
