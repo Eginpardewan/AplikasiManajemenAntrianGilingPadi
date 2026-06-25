@@ -1,3 +1,11 @@
 <Solution>
-  <Project Path="Giling_Padi/AplikasiGilinganPadi.csproj" Id="1952afed-b29b-49dd-b3b2-9e1553794974" />
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Giling_Padi/AplikasiGilinganPadi.csproj" Id="1952afed-b29b-49dd-b3b2-9e1553794974">
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
 </Solution>
