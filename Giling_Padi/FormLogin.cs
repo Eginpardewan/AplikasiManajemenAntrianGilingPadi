@@ -253,8 +253,8 @@ namespace AplikasiGilinganPadi
 
                         reader.Close();
 
-                        FormUtama formUtama = new FormUtama(idAdmin, namaAdmin, connectionString);
-                        formUtama.Show();
+                        FormDashboard formDashboard = new FormDashboard(idAdmin, namaAdmin, connectionString);
+                        formDashboard.Show();
                         this.Hide();
                     }
                     else
