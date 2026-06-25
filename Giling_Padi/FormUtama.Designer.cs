@@ -29,6 +29,8 @@ namespace AplikasiGilinganPadi
         private Button btnLaporan;
         private Button btnRefresh;
         private Button btnLogout;
+        private Button btnDashboard;
+        private Button btnRekapGiling; // TAMBAHAN
 
         // Submenu Kelola Antrian
         private Panel panelSubmenuAntrian;
@@ -56,6 +58,10 @@ namespace AplikasiGilinganPadi
         private ToolStripButton bindingNavigatorMoveLastItem;
         private ToolStripSeparator bindingNavigatorSeparator2;
 
+        // TAMBAHAN UCP 3: Binding Navigator Refresh
+        private ToolStripSeparator bindingNavigatorSeparator3;
+        private ToolStripButton bindingNavigatorRefreshItem;
+
         // Main Area Controls - Tab Control
         private TabControl tabControlMain;
         private TabPage tabPageAntrian;
@@ -80,6 +86,10 @@ namespace AplikasiGilinganPadi
         private Label lblSelesai;
         private Label lblSelectedInfo;
         private Label lblSelectedPetaniInfo;
+
+        // TAMBAHAN UCP 3: Status Bar
+        private Label lblUserInfo;
+        private Label lblDbStatus;
 
         // Separators
         private Label separator1;
@@ -117,6 +127,10 @@ namespace AplikasiGilinganPadi
             this.bindingNavigatorMoveLastItem = new ToolStripButton();
             this.bindingNavigatorSeparator2 = new ToolStripSeparator();
 
+            // TAMBAHAN UCP 3
+            this.bindingNavigatorSeparator3 = new ToolStripSeparator();
+            this.bindingNavigatorRefreshItem = new ToolStripButton();
+
             this.panelSidebar = new Panel();
             this.btnKelolaAntrian = new Button();
             this.panelSubmenuAntrian = new Panel();
@@ -135,6 +149,8 @@ namespace AplikasiGilinganPadi
             this.btnLaporan = new Button();
             this.btnRefresh = new Button();
             this.btnLogout = new Button();
+            this.btnDashboard = new Button();
+            this.btnRekapGiling = new Button(); // TAMBAHAN
             this.panelMain = new Panel();
             this.tabControlMain = new TabControl();
             this.tabPageAntrian = new TabPage();
@@ -155,6 +171,10 @@ namespace AplikasiGilinganPadi
             this.lblSelesai = new Label();
             this.lblSelectedInfo = new Label();
             this.lblSelectedPetaniInfo = new Label();
+
+            // TAMBAHAN UCP 3
+            this.lblUserInfo = new Label();
+            this.lblDbStatus = new Label();
 
             this.panelHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
@@ -235,7 +255,10 @@ namespace AplikasiGilinganPadi
             this.bindingNavigatorMoveLastItem,
             this.bindingNavigatorSeparator2,
             this.bindingNavigatorAddNewItem,
-            this.bindingNavigatorDeleteItem});
+            this.bindingNavigatorDeleteItem,
+            // TAMBAHAN UCP 3
+            this.bindingNavigatorSeparator3,
+            this.bindingNavigatorRefreshItem});
             this.bindingNavigator1.Dock = DockStyle.Top;
             this.bindingNavigator1.Location = new System.Drawing.Point(0, 65);
             this.bindingNavigator1.MoveFirstItem = this.bindingNavigatorMoveFirstItem;
@@ -304,6 +327,17 @@ namespace AplikasiGilinganPadi
             this.bindingNavigatorDeleteItem.Text = "🗑️";
             this.bindingNavigatorDeleteItem.ToolTipText = "Hapus data yang dipilih";
             this.bindingNavigatorDeleteItem.Click += new System.EventHandler(this.bindingNavigatorDeleteItem_Click);
+
+            // TAMBAHAN UCP 3: Tombol Refresh
+            this.bindingNavigatorSeparator3.Name = "bindingNavigatorSeparator3";
+            this.bindingNavigatorSeparator3.Size = new System.Drawing.Size(6, 28);
+
+            this.bindingNavigatorRefreshItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+            this.bindingNavigatorRefreshItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorRefreshItem.Image")));
+            this.bindingNavigatorRefreshItem.Name = "bindingNavigatorRefreshItem";
+            this.bindingNavigatorRefreshItem.Text = "🔄";
+            this.bindingNavigatorRefreshItem.ToolTipText = "Refresh data";
+            this.bindingNavigatorRefreshItem.Click += new System.EventHandler(this.btnRefresh_Click);
 
             // ========== PANEL SIDEBAR (KIRI) ==========
             this.panelSidebar.BackColor = Color.FromArgb(44, 62, 80);
@@ -469,13 +503,37 @@ namespace AplikasiGilinganPadi
             this.btnRefresh.Text = "🔄 Refresh";
             this.btnRefresh.Click += new EventHandler(this.btnRefresh_Click);
 
+            // ========== TOMBOL DASHBOARD ==========
+            this.btnDashboard.BackColor = System.Drawing.Color.FromArgb(26, 188, 156);
+            this.btnDashboard.Cursor = Cursors.Hand;
+            this.btnDashboard.FlatStyle = FlatStyle.Flat;
+            this.btnDashboard.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            this.btnDashboard.ForeColor = System.Drawing.Color.White;
+            this.btnDashboard.Location = new System.Drawing.Point(3, 410);
+            this.btnDashboard.Size = new System.Drawing.Size(160, 30);
+            this.btnDashboard.Text = "📊 Dashboard";
+            this.btnDashboard.UseVisualStyleBackColor = false;
+            this.btnDashboard.Click += new EventHandler(this.btnDashboard_Click);
+
+            // ========== TOMBOL REKAP GILING ==========
+            this.btnRekapGiling.BackColor = System.Drawing.Color.FromArgb(155, 89, 182);
+            this.btnRekapGiling.Cursor = Cursors.Hand;
+            this.btnRekapGiling.FlatStyle = FlatStyle.Flat;
+            this.btnRekapGiling.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            this.btnRekapGiling.ForeColor = System.Drawing.Color.White;
+            this.btnRekapGiling.Location = new System.Drawing.Point(3, 446);
+            this.btnRekapGiling.Size = new System.Drawing.Size(160, 30);
+            this.btnRekapGiling.Text = "📊 Rekap Giling";
+            this.btnRekapGiling.UseVisualStyleBackColor = false;
+            this.btnRekapGiling.Click += new EventHandler(this.btnRekapGiling_Click);
+
             // btnLogout
             this.btnLogout.BackColor = Color.FromArgb(192, 57, 43);
             this.btnLogout.Cursor = Cursors.Hand;
             this.btnLogout.FlatStyle = FlatStyle.Flat;
             this.btnLogout.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             this.btnLogout.ForeColor = Color.White;
-            this.btnLogout.Location = new System.Drawing.Point(3, 410);
+            this.btnLogout.Location = new System.Drawing.Point(3, 482);
             this.btnLogout.Size = new System.Drawing.Size(160, 30);
             this.btnLogout.Text = "🚪 Logout";
             this.btnLogout.Click += new EventHandler(this.btnLogout_Click);
@@ -490,6 +548,8 @@ namespace AplikasiGilinganPadi
             this.panelSidebar.Controls.Add(this.separator2);
             this.panelSidebar.Controls.Add(this.btnLaporan);
             this.panelSidebar.Controls.Add(this.btnRefresh);
+            this.panelSidebar.Controls.Add(this.btnDashboard);
+            this.panelSidebar.Controls.Add(this.btnRekapGiling);
             this.panelSidebar.Controls.Add(this.btnLogout);
 
             // ========== PANEL MAIN ==========
@@ -539,6 +599,7 @@ namespace AplikasiGilinganPadi
             this.dgvAntrian.ReadOnly = true;
             this.dgvAntrian.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvAntrian.MultiSelect = false;
+            this.dgvAntrian.CellClick += new DataGridViewCellEventHandler(this.dgvAntrian_CellClick);
 
             this.tabPageAntrian.Controls.Add(this.dgvAntrian);
             this.tabPageAntrian.Controls.Add(this.groupBoxSearch);
@@ -593,13 +654,14 @@ namespace AplikasiGilinganPadi
             // ========== PANEL STATUS ==========
             this.panelStatus.BackColor = Color.FromArgb(52, 73, 94);
             this.panelStatus.Dock = DockStyle.Bottom;
-            this.panelStatus.Height = 60;
+            this.panelStatus.Height = 80;
             this.panelStatus.Padding = new Padding(8);
 
             this.panelStats.BackColor = Color.FromArgb(44, 62, 80);
             this.panelStats.Dock = DockStyle.Fill;
             this.panelStats.Padding = new Padding(8);
 
+            // Row 1
             this.lblTotalRecord.AutoSize = true;
             this.lblTotalRecord.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             this.lblTotalRecord.ForeColor = Color.White;
@@ -609,32 +671,46 @@ namespace AplikasiGilinganPadi
             this.lblMenunggu.AutoSize = true;
             this.lblMenunggu.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             this.lblMenunggu.ForeColor = Color.FromArgb(241, 196, 15);
-            this.lblMenunggu.Location = new System.Drawing.Point(8, 30);
+            this.lblMenunggu.Location = new System.Drawing.Point(180, 10);
             this.lblMenunggu.Text = "⏳ Menunggu: 0";
 
             this.lblDiproses.AutoSize = true;
             this.lblDiproses.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             this.lblDiproses.ForeColor = Color.FromArgb(52, 152, 219);
-            this.lblDiproses.Location = new System.Drawing.Point(100, 30);
+            this.lblDiproses.Location = new System.Drawing.Point(300, 10);
             this.lblDiproses.Text = "⚙ Diproses: 0";
 
             this.lblSelesai.AutoSize = true;
             this.lblSelesai.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             this.lblSelesai.ForeColor = Color.FromArgb(39, 174, 96);
-            this.lblSelesai.Location = new System.Drawing.Point(190, 30);
+            this.lblSelesai.Location = new System.Drawing.Point(420, 10);
             this.lblSelesai.Text = "✅ Selesai: 0";
 
+            // Row 1 - Selected Info
             this.lblSelectedInfo.AutoSize = true;
             this.lblSelectedInfo.Font = new Font("Segoe UI", 7F, FontStyle.Italic);
             this.lblSelectedInfo.ForeColor = Color.FromArgb(149, 165, 166);
-            this.lblSelectedInfo.Location = new System.Drawing.Point(350, 10);
+            this.lblSelectedInfo.Location = new System.Drawing.Point(550, 10);
             this.lblSelectedInfo.Text = "📌 Belum ada data antrian dipilih";
 
             this.lblSelectedPetaniInfo.AutoSize = true;
             this.lblSelectedPetaniInfo.Font = new Font("Segoe UI", 7F, FontStyle.Italic);
             this.lblSelectedPetaniInfo.ForeColor = Color.FromArgb(149, 165, 166);
-            this.lblSelectedPetaniInfo.Location = new System.Drawing.Point(350, 30);
+            this.lblSelectedPetaniInfo.Location = new System.Drawing.Point(550, 30);
             this.lblSelectedPetaniInfo.Text = "👨‍🌾 Belum ada data petani dipilih";
+
+            // TAMBAHAN UCP 3: Row 2
+            this.lblUserInfo.AutoSize = true;
+            this.lblUserInfo.Font = new Font("Segoe UI", 7F, FontStyle.Bold);
+            this.lblUserInfo.ForeColor = Color.FromArgb(200, 200, 200);
+            this.lblUserInfo.Location = new System.Drawing.Point(8, 45);
+            this.lblUserInfo.Text = "👤 Admin: -";
+
+            this.lblDbStatus.AutoSize = true;
+            this.lblDbStatus.Font = new Font("Segoe UI", 7F, FontStyle.Bold);
+            this.lblDbStatus.ForeColor = Color.LightGreen;
+            this.lblDbStatus.Location = new System.Drawing.Point(180, 45);
+            this.lblDbStatus.Text = "🟢 Database Connected | 📊 0 Petani | 📝 0 Hasil Giling";
 
             this.panelStats.Controls.Add(this.lblTotalRecord);
             this.panelStats.Controls.Add(this.lblMenunggu);
@@ -642,6 +718,8 @@ namespace AplikasiGilinganPadi
             this.panelStats.Controls.Add(this.lblSelesai);
             this.panelStats.Controls.Add(this.lblSelectedInfo);
             this.panelStats.Controls.Add(this.lblSelectedPetaniInfo);
+            this.panelStats.Controls.Add(this.lblUserInfo);
+            this.panelStats.Controls.Add(this.lblDbStatus);
 
             this.panelStatus.Controls.Add(this.panelStats);
 
