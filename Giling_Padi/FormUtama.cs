@@ -58,6 +58,10 @@ namespace AplikasiGilinganPadi
                 panelSubmenuAntrian.Visible = false;
             if (panelSubmenuPetani != null)
                 panelSubmenuPetani.Visible = false;
+
+            // ========== TAMBAHAN UCP 3 ==========
+            UpdateStatusBarInfo();
+            SetupContextMenu();
         }
 
         // ========== EVENT KETIKA TAB BERUBAH ==========
@@ -68,12 +72,16 @@ namespace AplikasiGilinganPadi
                 // Tab Antrian dipilih
                 bindingNavigator1.BindingSource = bsAntrian;
                 bindingNavigator1.Text = "bindingNavigator1 - Data Antrian";
+                lblSelectedPetaniInfo.Visible = false;
+                lblSelectedInfo.Visible = true;
             }
             else if (tabControlMain.SelectedTab == tabPagePetani)
             {
                 // Tab Petani dipilih
                 bindingNavigator1.BindingSource = bsPetani;
                 bindingNavigator1.Text = "bindingNavigator1 - Data Petani";
+                lblSelectedInfo.Visible = false;
+                lblSelectedPetaniInfo.Visible = true;
             }
         }
 
@@ -87,6 +95,8 @@ namespace AplikasiGilinganPadi
             dgvAntrian.AllowUserToAddRows = false;
             dgvAntrian.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dgvAntrian.RowHeadersVisible = false;
+            dgvAntrian.CellClick += dgvAntrian_CellClick;
+            dgvAntrian.CellDoubleClick += dgvAntrian_CellDoubleClick; // TAMBAHAN UCP 3
         }
 
         private void SetupDataGridViewPetani()
@@ -99,6 +109,67 @@ namespace AplikasiGilinganPadi
             dgvPetani.AllowUserToAddRows = false;
             dgvPetani.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dgvPetani.RowHeadersVisible = false;
+            dgvPetani.CellClick += dgvPetani_CellClick;
+            dgvPetani.CellDoubleClick += dgvPetani_CellDoubleClick; // TAMBAHAN UCP 3
+        }
+
+        // ========== TAMBAHAN UCP 3: SETUP CONTEXT MENU ==========
+        private void SetupContextMenu()
+        {
+            // Context Menu untuk DataGridView Antrian
+            ContextMenuStrip cmsAntrian = new ContextMenuStrip();
+            cmsAntrian.Items.Add("✏️ Edit Antrian", null, (s, e) => btnEditAntrian_Click(null, null));
+            cmsAntrian.Items.Add("🗑️ Hapus Antrian", null, (s, e) => btnHapusAntrian_Click(null, null));
+            cmsAntrian.Items.Add("⚙️ Proses Giling", null, (s, e) => btnProsesGiling_Click(null, null));
+            cmsAntrian.Items.Add("📝 Catat Hasil", null, (s, e) => btnCatatHasil_Click(null, null));
+            cmsAntrian.Items.Add("-");
+            cmsAntrian.Items.Add("🔄 Refresh", null, (s, e) => btnRefresh_Click(null, null));
+            dgvAntrian.ContextMenuStrip = cmsAntrian;
+
+            // Context Menu untuk DataGridView Petani
+            ContextMenuStrip cmsPetani = new ContextMenuStrip();
+            cmsPetani.Items.Add("✏️ Edit Petani", null, (s, e) => btnEditPetani_Click(null, null));
+            cmsPetani.Items.Add("🗑️ Hapus Petani", null, (s, e) => btnHapusPetani_Click(null, null));
+            cmsPetani.Items.Add("-");
+            cmsPetani.Items.Add("🔄 Refresh", null, (s, e) => btnRefresh_Click(null, null));
+            dgvPetani.ContextMenuStrip = cmsPetani;
+        }
+
+        // ========== TAMBAHAN UCP 3: UPDATE STATUS BAR ==========
+        private void UpdateStatusBarInfo()
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                // Count Admin
+                string queryAdmin = "SELECT COUNT(*) FROM Admin";
+                SqlCommand cmdAdmin = new SqlCommand(queryAdmin, conn);
+                int totalAdmin = Convert.ToInt32(cmdAdmin.ExecuteScalar());
+
+                // Count Petani
+                string queryPetani = "SELECT COUNT(*) FROM Petani";
+                SqlCommand cmdPetani = new SqlCommand(queryPetani, conn);
+                int totalPetani = Convert.ToInt32(cmdPetani.ExecuteScalar());
+
+                // Count Hasil Giling
+                string queryHasil = "SELECT COUNT(*) FROM HasilGiling";
+                SqlCommand cmdHasil = new SqlCommand(queryHasil, conn);
+                int totalHasil = Convert.ToInt32(cmdHasil.ExecuteScalar());
+
+                conn.Close();
+
+                // Update status bar
+                if (lblUserInfo != null)
+                    lblUserInfo.Text = $"👤 Admin: {namaAdmin}";
+                if (lblDbStatus != null)
+                    lblDbStatus.Text = $"🟢 Database Connected | 📊 {totalPetani} Petani | 📝 {totalHasil} Hasil Giling | 👥 {totalAdmin} Admin";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error update status bar: " + ex.Message);
+            }
         }
 
         private void MakeLogoCircular()
@@ -201,6 +272,9 @@ namespace AplikasiGilinganPadi
             btnTambahAntrian.Enabled = true;
             btnEditAntrian.Enabled = true;
             btnHapusAntrian.Enabled = true;
+            btnTambahPetani.Enabled = true;
+            btnEditPetani.Enabled = true;
+            btnHapusPetani.Enabled = true;
         }
 
         private void btnKelolaAntrian_Click(object sender, EventArgs e)
@@ -244,7 +318,13 @@ namespace AplikasiGilinganPadi
                                     p.no_telepon, 
                                     a.berat_gabah, 
                                     a.tanggal_giling, 
-                                    a.status 
+                                    a.status,
+                                    CASE 
+                                        WHEN a.status = 'menunggu' THEN '🟡'
+                                        WHEN a.status = 'proses' THEN '🔵'
+                                        WHEN a.status = 'selesai' THEN '🟢'
+                                        ELSE '⚪'
+                                    END AS status_icon
                                 FROM Antrian a
                                 JOIN Petani p ON a.id_petani = p.id_petani
                                 ORDER BY a.nomor_antrian";
@@ -257,6 +337,11 @@ namespace AplikasiGilinganPadi
 
                 if (dgvAntrian.Columns["id_antrian"] != null)
                     dgvAntrian.Columns["id_antrian"].Visible = false;
+                if (dgvAntrian.Columns["status_icon"] != null)
+                {
+                    dgvAntrian.Columns["status_icon"].HeaderText = " ";
+                    dgvAntrian.Columns["status_icon"].Width = 30;
+                }
 
                 if (dgvAntrian.Columns["nomor_antrian"] != null)
                     dgvAntrian.Columns["nomor_antrian"].HeaderText = "No Antrian";
@@ -317,12 +402,30 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== TAMBAHAN UCP 3: DOUBLE CLICK UNTUK EDIT ==========
+        private void dgvAntrian_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                btnEditAntrian_Click(sender, e);
+            }
+        }
+
+        private void dgvPetani_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                btnEditPetani_Click(sender, e);
+            }
+        }
+
         private void btnTambahPetani_Click(object sender, EventArgs e)
         {
             FormPetani formPetani = new FormPetani(connectionString, 0);
             if (formPetani.ShowDialog() == DialogResult.OK)
             {
                 LoadDataPetani();
+                UpdateStatusBarInfo();
             }
         }
 
@@ -337,6 +440,7 @@ namespace AplikasiGilinganPadi
                 if (formPetani.ShowDialog() == DialogResult.OK)
                 {
                     LoadDataPetani();
+                    UpdateStatusBarInfo();
                 }
             }
             else
@@ -379,6 +483,7 @@ namespace AplikasiGilinganPadi
                             MessageBox.Show("Data petani berhasil dihapus!", "Sukses",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadDataPetani();
+                            UpdateStatusBarInfo();
                         }
                         else
                         {
@@ -471,7 +576,13 @@ namespace AplikasiGilinganPadi
                                     p.no_telepon, 
                                     a.berat_gabah, 
                                     a.tanggal_giling, 
-                                    a.status 
+                                    a.status,
+                                    CASE 
+                                        WHEN a.status = 'menunggu' THEN '🟡'
+                                        WHEN a.status = 'proses' THEN '🔵'
+                                        WHEN a.status = 'selesai' THEN '🟢'
+                                        ELSE '⚪'
+                                    END AS status_icon
                                 FROM Antrian a
                                 JOIN Petani p ON a.id_petani = p.id_petani
                                 WHERE p.nama LIKE @keyword 
@@ -490,6 +601,11 @@ namespace AplikasiGilinganPadi
 
                 if (dgvAntrian.Columns["id_antrian"] != null)
                     dgvAntrian.Columns["id_antrian"].Visible = false;
+                if (dgvAntrian.Columns["status_icon"] != null)
+                {
+                    dgvAntrian.Columns["status_icon"].HeaderText = " ";
+                    dgvAntrian.Columns["status_icon"].Width = 30;
+                }
 
                 conn.Close();
 
@@ -626,6 +742,7 @@ namespace AplikasiGilinganPadi
             if (formAntrian.ShowDialog() == DialogResult.OK)
             {
                 LoadDataAntrian();
+                UpdateStatusBarInfo();
             }
         }
 
@@ -658,10 +775,48 @@ namespace AplikasiGilinganPadi
                         Console.WriteLine("Error ambil status: " + ex.Message);
                     }
 
-                    if (statusBaru == "selesai" && statusLama != "selesai")
+                    // PERBAIKAN UCP 3: Cek jika status berubah menjadi selesai
+                    if (statusBaru == "selesai")
                     {
-                        CekDanBukaFormHasilGiling(idAntrian);
+                        // Cek apakah sudah ada hasil giling
+                        bool sudahAdaHasil = false;
+                        try
+                        {
+                            if (conn.State == ConnectionState.Closed)
+                                conn.Open();
+                            string cekQuery = "SELECT COUNT(*) FROM HasilGiling WHERE id_antrian = @id";
+                            SqlCommand cekCmd = new SqlCommand(cekQuery, conn);
+                            cekCmd.Parameters.AddWithValue("@id", idAntrian);
+                            sudahAdaHasil = Convert.ToInt32(cekCmd.ExecuteScalar()) > 0;
+                            conn.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error: " + ex.Message);
+                        }
+
+                        if (!sudahAdaHasil && statusLama != "selesai")
+                        {
+                            DialogResult hasil = MessageBox.Show(
+                                "Status antrian telah diubah menjadi SELESAI.\n\nApakah ingin mencatat hasil giling sekarang?",
+                                "Catat Hasil Giling",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question);
+
+                            if (hasil == DialogResult.Yes)
+                            {
+                                FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
+                                formHasil.ShowDialog();
+                                LoadDataAntrian();
+                            }
+                        }
+                        else if (sudahAdaHasil)
+                        {
+                            MessageBox.Show("✅ Hasil giling sudah pernah dicatat untuk antrian ini.",
+                                "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
+                    UpdateStatusBarInfo();
                 }
             }
             else
@@ -710,6 +865,7 @@ namespace AplikasiGilinganPadi
                             MessageBox.Show("Data antrian berhasil dihapus!", "Sukses",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                             LoadDataAntrian();
+                            UpdateStatusBarInfo();
                         }
                         else
                         {
@@ -794,8 +950,10 @@ namespace AplikasiGilinganPadi
 
                     if (sudahAda > 0)
                     {
+                        // PERBAIKAN UCP 3: Konfirmasi sebelum ubah status
                         DialogResult confirm = MessageBox.Show(
-                            $"Antrian '{namaPetani}' sudah memiliki catatan hasil giling.\n\nApakah ingin mengubah status menjadi 'SELESAI'?",
+                            $"Antrian '{namaPetani}' sudah memiliki catatan hasil giling.\n\n" +
+                            "Apakah Anda yakin ingin mengubah status menjadi SELESAI?",
                             "Konfirmasi Selesai",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Question);
@@ -814,7 +972,7 @@ namespace AplikasiGilinganPadi
 
                                 conn.Close();
 
-                                MessageBox.Show("Status antrian berhasil diubah menjadi 'SELESAI'!",
+                                MessageBox.Show("✅ Status antrian berhasil diubah menjadi 'SELESAI'!",
                                     "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                                 LoadDataAntrian();
@@ -953,6 +1111,7 @@ namespace AplikasiGilinganPadi
                 FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
                 formHasil.ShowDialog();
                 LoadDataAntrian();
+                UpdateStatusBarInfo();
             }
             else
             {
@@ -971,10 +1130,41 @@ namespace AplikasiGilinganPadi
         {
             LoadDataAntrian();
             LoadDataPetani();
+            UpdateStatusBarInfo();
             txtSearch.Clear();
             txtSearchPetani.Clear();
             MessageBox.Show("Data berhasil direfresh!", "Info",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        // ========== TOMBOL DASHBOARD ==========
+        private void btnDashboard_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FormDashboard dashboard = new FormDashboard(connectionString);
+                dashboard.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error membuka Dashboard: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // ========== TOMBOL REKAP GILING ==========
+        private void btnRekapGiling_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FormRekapDataGiling frmRekap = new FormRekapDataGiling(connectionString);
+                frmRekap.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error membuka Rekap Giling: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnLogout_Click(object sender, EventArgs e)
