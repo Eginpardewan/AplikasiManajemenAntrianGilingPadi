@@ -8,9 +8,11 @@ namespace AplikasiGilinganPadi
     public class DAL
     {
         // ========== CONNECTION STRING WITH IP (Untuk Client-Server) ==========
+
+        // ========== a. Function untuk mengambil IPAddress Server ==========
         public static string GetLocalIPAddress()
         {
-            string localIP = "";
+            string localIP = string.Empty;
             try
             {
                 var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
@@ -25,11 +27,12 @@ namespace AplikasiGilinganPadi
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error getting IP: " + ex.Message);
+                MessageBox.Show("Error getting local IP address: " + ex.Message);
             }
             return localIP;
         }
 
+        // ========== b. Connection String dengan IP ==========
         public static string GetConnectionString()
         {
             string ip = GetLocalIPAddress();
@@ -38,6 +41,7 @@ namespace AplikasiGilinganPadi
             return $"Data Source={ip};Initial Catalog=GilinganPadi;Integrated Security=True;";
         }
 
+        // ========== Connection String ==========
         private static string connectionString = GetConnectionString();
         private SqlConnection conn;
         private SqlDataAdapter da;
