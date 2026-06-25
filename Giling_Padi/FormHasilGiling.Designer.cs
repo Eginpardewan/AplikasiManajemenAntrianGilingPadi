@@ -29,6 +29,10 @@ namespace AplikasiGilinganPadi
         private System.Windows.Forms.Label lblStatusDedak;
         private System.Windows.Forms.Label lblStatusTotal;
 
+        // TAMBAHKAN LABEL BARU UNTUK UCP 3
+        private System.Windows.Forms.Label lblStatusAntrian;
+        private System.Windows.Forms.Label lblSisaGabah;
+
         private System.Windows.Forms.TextBox txtNomorAntrian;
         private System.Windows.Forms.TextBox txtNamaPetani;
         private System.Windows.Forms.TextBox txtAlamat;
@@ -42,6 +46,8 @@ namespace AplikasiGilinganPadi
 
         private System.Windows.Forms.GroupBox groupBoxInfo;
         private System.Windows.Forms.GroupBox groupBoxHasil;
+
+        private System.Windows.Forms.ToolTip toolTipInfo;
 
         protected override void Dispose(bool disposing)
         {
@@ -70,12 +76,16 @@ namespace AplikasiGilinganPadi
             this.lblDedak = new System.Windows.Forms.Label();
             this.lblInfoMaksimal = new System.Windows.Forms.Label();
 
-            // INISIALISASI LABEL STATUS BARU
+            // INISIALISASI LABEL STATUS
             this.lblInfoBatasBeras = new System.Windows.Forms.Label();
             this.lblInfoBatasDedak = new System.Windows.Forms.Label();
             this.lblStatusBeras = new System.Windows.Forms.Label();
             this.lblStatusDedak = new System.Windows.Forms.Label();
             this.lblStatusTotal = new System.Windows.Forms.Label();
+
+            // INISIALISASI LABEL BARU UCP 3
+            this.lblStatusAntrian = new System.Windows.Forms.Label();
+            this.lblSisaGabah = new System.Windows.Forms.Label();
 
             this.txtNomorAntrian = new System.Windows.Forms.TextBox();
             this.txtNamaPetani = new System.Windows.Forms.TextBox();
@@ -88,6 +98,8 @@ namespace AplikasiGilinganPadi
             this.btnSimpan = new System.Windows.Forms.Button();
             this.btnBatal = new System.Windows.Forms.Button();
 
+            this.toolTipInfo = new System.Windows.Forms.ToolTip();
+
             this.panelHeader.SuspendLayout();
             this.panelMain.SuspendLayout();
             this.panelButton.SuspendLayout();
@@ -96,7 +108,7 @@ namespace AplikasiGilinganPadi
             this.SuspendLayout();
 
             // ========== FORM SETTING ==========
-            this.ClientSize = new System.Drawing.Size(550, 580);
+            this.ClientSize = new System.Drawing.Size(550, 620);
             this.Text = "📝 Catat Hasil Giling";
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -104,6 +116,7 @@ namespace AplikasiGilinganPadi
             this.MinimizeBox = false;
             this.BackColor = System.Drawing.Color.FromArgb(236, 240, 241);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular);
+            this.FormClosing += new FormClosingEventHandler(this.FormHasilGiling_FormClosing);
 
             // ========== PANEL HEADER ==========
             this.panelHeader.BackColor = System.Drawing.Color.FromArgb(52, 73, 94);
@@ -136,7 +149,7 @@ namespace AplikasiGilinganPadi
             this.groupBoxInfo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxInfo.BackColor = System.Drawing.Color.White;
             this.groupBoxInfo.Location = new System.Drawing.Point(20, 20);
-            this.groupBoxInfo.Size = new System.Drawing.Size(490, 210);
+            this.groupBoxInfo.Size = new System.Drawing.Size(490, 230);
             this.groupBoxInfo.Padding = new Padding(10);
 
             // No Antrian
@@ -215,6 +228,13 @@ namespace AplikasiGilinganPadi
             lblKg1.Location = new System.Drawing.Point(225, 176);
             lblKg1.Text = "kg";
 
+            // ========== STATUS ANTRIAN (BARU UCP 3) ==========
+            this.lblStatusAntrian.AutoSize = true;
+            this.lblStatusAntrian.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblStatusAntrian.ForeColor = System.Drawing.Color.FromArgb(241, 196, 15);
+            this.lblStatusAntrian.Location = new System.Drawing.Point(280, 176);
+            this.lblStatusAntrian.Text = "Status: MENUNGGU";
+
             this.groupBoxInfo.Controls.Add(this.lblNomorAntrian);
             this.groupBoxInfo.Controls.Add(this.txtNomorAntrian);
             this.groupBoxInfo.Controls.Add(this.lblNamaPetani);
@@ -226,13 +246,14 @@ namespace AplikasiGilinganPadi
             this.groupBoxInfo.Controls.Add(this.lblBeratGabah);
             this.groupBoxInfo.Controls.Add(this.txtBeratGabah);
             this.groupBoxInfo.Controls.Add(lblKg1);
+            this.groupBoxInfo.Controls.Add(this.lblStatusAntrian);
 
             // ========== GROUPBOX HASIL GILING ==========
             this.groupBoxHasil.Text = "📊 Hasil Penggilingan";
             this.groupBoxHasil.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.groupBoxHasil.BackColor = System.Drawing.Color.White;
-            this.groupBoxHasil.Location = new System.Drawing.Point(20, 245);
-            this.groupBoxHasil.Size = new System.Drawing.Size(490, 210);
+            this.groupBoxHasil.Location = new System.Drawing.Point(20, 265);
+            this.groupBoxHasil.Size = new System.Drawing.Size(490, 240);
             this.groupBoxHasil.Padding = new Padding(10);
 
             // Beras Dihasilkan
@@ -249,6 +270,7 @@ namespace AplikasiGilinganPadi
             this.txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
             this.txtBerasDihasilkan.TextAlign = HorizontalAlignment.Right;
             this.txtBerasDihasilkan.BorderStyle = BorderStyle.FixedSingle;
+            this.toolTipInfo.SetToolTip(this.txtBerasDihasilkan, "Masukkan berat beras yang dihasilkan dalam kg");
 
             Label lblKg2 = new Label();
             lblKg2.AutoSize = true;
@@ -267,6 +289,7 @@ namespace AplikasiGilinganPadi
             this.lblStatusBeras.AutoSize = true;
             this.lblStatusBeras.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblStatusBeras.Location = new System.Drawing.Point(400, 38);
+            this.lblStatusBeras.Text = "";
 
             // Dedak
             this.lblDedak.AutoSize = true;
@@ -282,6 +305,7 @@ namespace AplikasiGilinganPadi
             this.txtDedak.BackColor = System.Drawing.Color.White;
             this.txtDedak.TextAlign = HorizontalAlignment.Right;
             this.txtDedak.BorderStyle = BorderStyle.FixedSingle;
+            this.toolTipInfo.SetToolTip(this.txtDedak, "Masukkan berat dedak yang dihasilkan dalam kg");
 
             Label lblKg3 = new Label();
             lblKg3.AutoSize = true;
@@ -300,6 +324,7 @@ namespace AplikasiGilinganPadi
             this.lblStatusDedak.AutoSize = true;
             this.lblStatusDedak.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblStatusDedak.Location = new System.Drawing.Point(400, 88);
+            this.lblStatusDedak.Text = "";
 
             // Label Info Maksimal Total
             this.lblInfoMaksimal.AutoSize = true;
@@ -313,6 +338,14 @@ namespace AplikasiGilinganPadi
             this.lblStatusTotal.AutoSize = true;
             this.lblStatusTotal.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblStatusTotal.Location = new System.Drawing.Point(15, 160);
+            this.lblStatusTotal.Text = "";
+
+            // ========== SISA GABAH (BARU UCP 3) ==========
+            this.lblSisaGabah.AutoSize = true;
+            this.lblSisaGabah.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
+            this.lblSisaGabah.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
+            this.lblSisaGabah.Location = new System.Drawing.Point(15, 185);
+            this.lblSisaGabah.Text = "📊 Sisa gabah: 0 kg";
 
             this.groupBoxHasil.Controls.Add(this.lblBerasDihasilkan);
             this.groupBoxHasil.Controls.Add(this.txtBerasDihasilkan);
@@ -326,6 +359,7 @@ namespace AplikasiGilinganPadi
             this.groupBoxHasil.Controls.Add(this.lblStatusDedak);
             this.groupBoxHasil.Controls.Add(this.lblInfoMaksimal);
             this.groupBoxHasil.Controls.Add(this.lblStatusTotal);
+            this.groupBoxHasil.Controls.Add(this.lblSisaGabah);
 
             // ========== ADD TO PANEL MAIN ==========
             this.panelMain.Controls.Add(this.groupBoxInfo);
@@ -346,6 +380,7 @@ namespace AplikasiGilinganPadi
             this.btnSimpan.Text = "💾 Simpan";
             this.btnSimpan.UseVisualStyleBackColor = false;
             this.btnSimpan.Cursor = Cursors.Hand;
+            this.toolTipInfo.SetToolTip(this.btnSimpan, "Simpan hasil giling");
 
             this.btnBatal.BackColor = System.Drawing.Color.FromArgb(231, 76, 60);
             this.btnBatal.FlatStyle = FlatStyle.Flat;
@@ -356,6 +391,7 @@ namespace AplikasiGilinganPadi
             this.btnBatal.Text = "❌ Batal";
             this.btnBatal.UseVisualStyleBackColor = false;
             this.btnBatal.Cursor = Cursors.Hand;
+            this.toolTipInfo.SetToolTip(this.btnBatal, "Batalkan dan tutup form");
 
             this.panelButton.Controls.Add(this.btnSimpan);
             this.panelButton.Controls.Add(this.btnBatal);
