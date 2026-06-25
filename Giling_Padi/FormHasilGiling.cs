@@ -12,6 +12,7 @@ namespace AplikasiGilinganPadi
         private string connectionString;
         private int idAntrian;
         private decimal beratGabah = 0;
+        private bool isEditMode = false;
 
         public FormHasilGiling(string connString, int id)
         {
@@ -20,6 +21,49 @@ namespace AplikasiGilinganPadi
             conn = new SqlConnection(connectionString);
             idAntrian = id;
             LoadDataAntrian();
+            CekDataExist();
+        }
+
+        // ========== CEK APAKAH DATA SUDAH ADA ==========
+        private void CekDataExist()
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = "SELECT beras_dihasilkan, dedak FROM HasilGiling WHERE id_antrian = @id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@id", idAntrian);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    isEditMode = true;
+                    this.Text = "✏️ Edit Hasil Giling";
+                    btnSimpan.Text = "✅ Update";
+
+                    decimal beras = Convert.ToDecimal(reader["beras_dihasilkan"]);
+                    decimal dedak = Convert.ToDecimal(reader["dedak"]);
+                    txtBerasDihasilkan.Text = FormatDecimalWithComma(beras);
+                    txtDedak.Text = FormatDecimalWithComma(dedak);
+
+                    UpdateStatusWarna();
+                }
+                else
+                {
+                    isEditMode = false;
+                    this.Text = "📝 Catat Hasil Giling";
+                    btnSimpan.Text = "💾 Simpan";
+                }
+                reader.Close();
+                conn.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error cek data: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // ========== LOAD DATA ANTRIAN (JOIN DENGAN PETANI) ==========
@@ -35,7 +79,8 @@ namespace AplikasiGilinganPadi
                                     p.nama AS nama_petani, 
                                     p.alamat, 
                                     p.no_telepon, 
-                                    a.berat_gabah 
+                                    a.berat_gabah,
+                                    a.status
                                 FROM Antrian a
                                 INNER JOIN Petani p ON a.id_petani = p.id_petani
                                 WHERE a.id_antrian = @id";
@@ -51,23 +96,53 @@ namespace AplikasiGilinganPadi
                     txtNoTelepon.Text = reader["no_telepon"].ToString();
                     beratGabah = Convert.ToDecimal(reader["berat_gabah"]);
 
+                    string status = reader["status"].ToString();
+                    lblStatusAntrian.Text = $"Status: {status.ToUpper()}";
+
+                    // Warna status
+                    if (status == "selesai")
+                        lblStatusAntrian.ForeColor = System.Drawing.Color.Green;
+                    else if (status == "proses")
+                        lblStatusAntrian.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
+                    else
+                        lblStatusAntrian.ForeColor = System.Drawing.Color.FromArgb(241, 196, 15);
+
                     // Format dengan koma
                     txtBeratGabah.Text = FormatDecimalWithComma(beratGabah);
-                    txtBerasDihasilkan.Clear();
-                    txtDedak.Clear();
 
                     lblInfoMaksimal.Text = $"⚠️ Maksimal total beras + dedak = {FormatDecimalWithComma(beratGabah)} kg";
                     lblInfoBatasBeras.Text = $"Max: {FormatDecimalWithComma(beratGabah)} kg";
                     lblInfoBatasDedak.Text = $"Max: {FormatDecimalWithComma(beratGabah)} kg";
 
-                    txtBerasDihasilkan.Focus();
+                    // Enable/disable berdasarkan status
+                    if (status == "selesai" && !isEditMode)
+                    {
+                        txtBerasDihasilkan.Enabled = false;
+                        txtDedak.Enabled = false;
+                        btnSimpan.Enabled = false;
+                        lblInfoMaksimal.Text = "⚠️ Antrian sudah selesai, tidak dapat mencatat hasil lagi!";
+                        lblInfoMaksimal.ForeColor = System.Drawing.Color.Red;
+                    }
+                    else
+                    {
+                        txtBerasDihasilkan.Enabled = true;
+                        txtDedak.Enabled = true;
+                        btnSimpan.Enabled = true;
+                        txtBerasDihasilkan.Focus();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Data antrian tidak ditemukan!", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Close();
                 }
                 reader.Close();
                 conn.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error",
+                MessageBox.Show("Error load data: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -107,10 +182,16 @@ namespace AplikasiGilinganPadi
                     lblStatusBeras.Text = "❌ Melebihi batas!";
                     lblStatusBeras.ForeColor = System.Drawing.Color.Red;
                 }
+                else if (beras < 0)
+                {
+                    txtBerasDihasilkan.BackColor = System.Drawing.Color.LightCoral;
+                    lblStatusBeras.Text = "❌ Negatif!";
+                    lblStatusBeras.ForeColor = System.Drawing.Color.Red;
+                }
                 else
                 {
                     txtBerasDihasilkan.BackColor = System.Drawing.Color.White;
-                    lblStatusBeras.Text = "OK";
+                    lblStatusBeras.Text = "✅ OK";
                     lblStatusBeras.ForeColor = System.Drawing.Color.Green;
                 }
             }
@@ -130,10 +211,16 @@ namespace AplikasiGilinganPadi
                     lblStatusDedak.Text = "❌ Melebihi batas!";
                     lblStatusDedak.ForeColor = System.Drawing.Color.Red;
                 }
+                else if (dedak < 0)
+                {
+                    txtDedak.BackColor = System.Drawing.Color.LightCoral;
+                    lblStatusDedak.Text = "❌ Negatif!";
+                    lblStatusDedak.ForeColor = System.Drawing.Color.Red;
+                }
                 else
                 {
                     txtDedak.BackColor = System.Drawing.Color.White;
-                    lblStatusDedak.Text = "OK";
+                    lblStatusDedak.Text = "✅ OK";
                     lblStatusDedak.ForeColor = System.Drawing.Color.Green;
                 }
             }
@@ -164,6 +251,31 @@ namespace AplikasiGilinganPadi
             else
             {
                 lblStatusTotal.Text = "";
+            }
+
+            // Update label Info Maksimal
+            if (!string.IsNullOrEmpty(txtBerasDihasilkan.Text) || !string.IsNullOrEmpty(txtDedak.Text))
+            {
+                decimal beras = ParseDecimalWithComma(txtBerasDihasilkan.Text);
+                decimal dedak = ParseDecimalWithComma(txtDedak.Text);
+                decimal total = beras + dedak;
+                decimal sisa = beratGabah - total;
+
+                if (sisa >= 0)
+                {
+                    lblSisaGabah.Text = $"📊 Sisa gabah: {FormatDecimalWithComma(sisa)} kg";
+                    lblSisaGabah.ForeColor = System.Drawing.Color.FromArgb(39, 174, 96);
+                }
+                else
+                {
+                    lblSisaGabah.Text = $"❌ Kelebihan: {FormatDecimalWithComma(Math.Abs(sisa))} kg";
+                    lblSisaGabah.ForeColor = System.Drawing.Color.Red;
+                }
+            }
+            else
+            {
+                lblSisaGabah.Text = $"📊 Sisa gabah: {FormatDecimalWithComma(beratGabah)} kg";
+                lblSisaGabah.ForeColor = System.Drawing.Color.FromArgb(52, 152, 219);
             }
         }
 
@@ -291,6 +403,13 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
+            if (berasDihasilkan == 0 && dedak == 0)
+            {
+                MessageBox.Show("❌ Beras atau dedak harus diisi dengan nilai lebih dari 0!", "Validasi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (berasDihasilkan > beratGabah)
             {
                 MessageBox.Show($"❌ Beras tidak boleh melebihi {FormatDecimalWithComma(beratGabah)} kg!", "Validasi",
@@ -314,6 +433,22 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
+            // ========== KONFIRMASI SEBELUM SIMPAN ==========
+            DialogResult confirm = MessageBox.Show(
+                $"📊 Ringkasan Hasil Giling:\n\n" +
+                $"• Berat Gabah: {FormatDecimalWithComma(beratGabah)} kg\n" +
+                $"• Beras: {FormatDecimalWithComma(berasDihasilkan)} kg\n" +
+                $"• Dedak: {FormatDecimalWithComma(dedak)} kg\n" +
+                $"• Total: {FormatDecimalWithComma(berasDihasilkan + dedak)} kg\n" +
+                $"• Sisa: {FormatDecimalWithComma(beratGabah - (berasDihasilkan + dedak))} kg\n\n" +
+                $"Apakah data sudah benar?",
+                "Konfirmasi Simpan",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm == DialogResult.No)
+                return;
+
             try
             {
                 if (conn.State == ConnectionState.Closed)
@@ -326,10 +461,11 @@ namespace AplikasiGilinganPadi
 
                 if (exists > 0)
                 {
-                    // UPDATE - Hanya update beras dan dedak
+                    // UPDATE
                     string query = @"UPDATE HasilGiling SET 
                                     beras_dihasilkan = @beras, 
-                                    dedak = @dedak 
+                                    dedak = @dedak,
+                                    tanggal_proses = GETDATE()
                                     WHERE id_antrian = @id";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@beras", berasDihasilkan);
@@ -342,11 +478,11 @@ namespace AplikasiGilinganPadi
                 }
                 else
                 {
-                    // INSERT - Hanya id_antrian, beras, dedak
+                    // INSERT
                     string query = @"INSERT INTO HasilGiling 
-                                    (id_antrian, beras_dihasilkan, dedak) 
+                                    (id_antrian, beras_dihasilkan, dedak, tanggal_proses) 
                                     VALUES 
-                                    (@id, @beras, @dedak)";
+                                    (@id, @beras, @dedak, GETDATE())";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@id", idAntrian);
                     cmd.Parameters.AddWithValue("@beras", berasDihasilkan);
@@ -403,6 +539,7 @@ namespace AplikasiGilinganPadi
             return value.ToString("#,0.##", new CultureInfo("id-ID"));
         }
 
+        // ========== EVENT FORM CLOSING ==========
         private void FormHasilGiling_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)
