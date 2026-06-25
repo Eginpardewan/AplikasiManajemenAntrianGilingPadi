@@ -42,9 +42,11 @@ namespace AplikasiGilinganPadi
                 dtpTanggal.Value = DateTime.Today;
                 minDate = DateTime.Today;
                 maxDate = DateTime.Today.AddDays(7);
+                cmbStatus.SelectedIndex = 0; // Default "menunggu"
             }
         }
 
+        // ========== LOAD PETANI KE COMBOBOX ==========
         private void LoadPetaniToComboBox()
         {
             try
@@ -74,6 +76,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== EVENT SELECTION CHANGE COMBOBOX ==========
         private void cmbNamaPetani_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbNamaPetani.SelectedValue != null && cmbNamaPetani.SelectedValue is int)
@@ -92,6 +95,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== GENERATE NOMOR ANTRIAN ==========
         private void GenerateNomorAntrian()
         {
             try
@@ -113,6 +117,56 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== CEK DUPLIKAT NOMOR ANTRIAN ==========
+        private bool IsNomorAntrianExist(int nomor, int excludeId = 0)
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = "SELECT COUNT(*) FROM Antrian WHERE nomor_antrian = @nomor AND id_antrian != @excludeId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@nomor", nomor);
+                cmd.Parameters.AddWithValue("@excludeId", excludeId);
+                int count = (int)cmd.ExecuteScalar();
+                conn.Close();
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error cek duplikat: " + ex.Message);
+                return false;
+            }
+        }
+
+        // ========== CEK PETANI SUDAH MEMILIKI ANTRIAN AKTIF ==========
+        private bool IsPetaniSudahAntri(int idPetani, int excludeId = 0)
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = @"SELECT COUNT(*) FROM Antrian 
+                                WHERE id_petani = @idPetani 
+                                AND status IN ('menunggu', 'proses')
+                                AND id_antrian != @excludeId";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@idPetani", idPetani);
+                cmd.Parameters.AddWithValue("@excludeId", excludeId);
+                int count = (int)cmd.ExecuteScalar();
+                conn.Close();
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error cek petani antri: " + ex.Message);
+                return false;
+            }
+        }
+
+        // ========== LOAD DATA UNTUK EDIT ==========
         private void LoadData()
         {
             try
@@ -143,7 +197,23 @@ namespace AplikasiGilinganPadi
                     dtpTanggal.Value = tanggalAwal;
                     cmbStatus.SelectedItem = reader["status"].ToString();
 
-                    cmbNamaPetani.SelectedValue = idPetaniTerpilih;
+                    // PERBAIKAN: Coba set SelectedValue, jika gagal gunakan loop
+                    try
+                    {
+                        cmbNamaPetani.SelectedValue = idPetaniTerpilih;
+                    }
+                    catch
+                    {
+                        // Fallback: cari secara manual
+                        foreach (DataRow row in dtPetani.Rows)
+                        {
+                            if (Convert.ToInt32(row["id_petani"]) == idPetaniTerpilih)
+                            {
+                                cmbNamaPetani.Text = row["nama"].ToString();
+                                break;
+                            }
+                        }
+                    }
 
                     minDate = tanggalAwal;
                     maxDate = tanggalAwal.AddDays(7);
@@ -158,6 +228,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== VALIDASI TANGGAL ==========
         private bool ValidateTanggal()
         {
             DateTime selectedDate = dtpTanggal.Value.Date;
@@ -199,8 +270,10 @@ namespace AplikasiGilinganPadi
             return true;
         }
 
+        // ========== TOMBOL SIMPAN ==========
         private void btnSimpan_Click(object sender, EventArgs e)
         {
+            // ========== VALIDASI PETANI ==========
             if (cmbNamaPetani.SelectedIndex == -1)
             {
                 MessageBox.Show("❌ Pilih Nama Petani terlebih dahulu!", "Validasi",
@@ -209,6 +282,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
+            // ========== VALIDASI BERAT GABAH ==========
             if (string.IsNullOrWhiteSpace(txtBeratGabah.Text))
             {
                 MessageBox.Show("❌ Berat Gabah harus diisi!", "Validasi",
@@ -228,6 +302,7 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
+            // ========== VALIDASI STATUS ==========
             if (cmbStatus.SelectedItem == null)
             {
                 MessageBox.Show("❌ Pilih Status Antrian terlebih dahulu!", "Validasi",
@@ -236,9 +311,36 @@ namespace AplikasiGilinganPadi
                 return;
             }
 
+            // ========== VALIDASI TANGGAL ==========
             if (!ValidateTanggal())
                 return;
 
+            // ========== VALIDASI DUPLIKAT NOMOR ANTRIAN ==========
+            int nomorAntrian = Convert.ToInt32(txtNomorAntrian.Text);
+            if (IsNomorAntrianExist(nomorAntrian, isEdit ? idAntrian : 0))
+            {
+                MessageBox.Show($"❌ Nomor Antrian {nomorAntrian} sudah digunakan!\n\nSilakan refresh untuk mendapatkan nomor baru.",
+                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                GenerateNomorAntrian();
+                return;
+            }
+
+            // ========== VALIDASI PETANI SUDAH ANTRI (HANYA UNTUK TAMBAH BARU) ==========
+            if (!isEdit && IsPetaniSudahAntri(idPetaniTerpilih, 0))
+            {
+                string namaPetani = cmbNamaPetani.Text;
+                DialogResult confirm = MessageBox.Show(
+                    $"⚠️ Petani '{namaPetani}' masih memiliki antrian aktif (menunggu/proses).\n\n" +
+                    "Apakah Anda tetap ingin menambahkan antrian baru untuk petani ini?",
+                    "Konfirmasi Tambah Antrian",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (confirm == DialogResult.No)
+                    return;
+            }
+
+            // ========== SIMPAN DATA ==========
             try
             {
                 if (conn.State == ConnectionState.Closed)
@@ -246,6 +348,13 @@ namespace AplikasiGilinganPadi
 
                 if (isEdit)
                 {
+                    // CEK STATUS SEBELUM DIUPDATE UNTUK DETEKSI PERUBAHAN
+                    string statusLama = "";
+                    string cekStatusQuery = "SELECT status FROM Antrian WHERE id_antrian = @id";
+                    SqlCommand cekStatusCmd = new SqlCommand(cekStatusQuery, conn);
+                    cekStatusCmd.Parameters.AddWithValue("@id", idAntrian);
+                    statusLama = cekStatusCmd.ExecuteScalar()?.ToString() ?? "";
+
                     string query = @"UPDATE Antrian 
                                     SET id_petani = @id_petani, 
                                         berat_gabah = @berat, 
@@ -259,6 +368,40 @@ namespace AplikasiGilinganPadi
                     cmd.Parameters.AddWithValue("@status", cmbStatus.SelectedItem.ToString());
                     cmd.Parameters.AddWithValue("@id", idAntrian);
                     cmd.ExecuteNonQuery();
+
+                    // CEK APAKAH STATUS BERUBAH MENJADI SELESAI
+                    string statusBaru = cmbStatus.SelectedItem.ToString();
+                    if (statusBaru == "selesai" && statusLama != "selesai")
+                    {
+                        // CEK APAKAH SUDAH ADA HASIL GILING
+                        string cekHasilQuery = "SELECT COUNT(*) FROM HasilGiling WHERE id_antrian = @id";
+                        SqlCommand cekHasilCmd = new SqlCommand(cekHasilQuery, conn);
+                        cekHasilCmd.Parameters.AddWithValue("@id", idAntrian);
+                        int sudahAdaHasil = Convert.ToInt32(cekHasilCmd.ExecuteScalar());
+
+                        if (sudahAdaHasil == 0)
+                        {
+                            conn.Close();
+                            DialogResult hasil = MessageBox.Show(
+                                "Status antrian telah diubah menjadi SELESAI.\n\nApakah ingin mencatat hasil giling sekarang?",
+                                "Catat Hasil Giling",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question);
+
+                            if (hasil == DialogResult.Yes)
+                            {
+                                FormHasilGiling formHasil = new FormHasilGiling(connectionString, idAntrian);
+                                formHasil.ShowDialog();
+                            }
+                            MessageBox.Show("✅ Data antrian berhasil diupdate!", "Sukses",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            this.DialogResult = DialogResult.OK;
+                            this.Close();
+                            return;
+                        }
+                    }
+
+                    conn.Close();
                     MessageBox.Show("✅ Data antrian berhasil diupdate!", "Sukses",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -269,11 +412,12 @@ namespace AplikasiGilinganPadi
                                     VALUES (@id_petani, @nomor, @berat, @tanggal, @status)";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@id_petani", idPetaniTerpilih);
-                    cmd.Parameters.AddWithValue("@nomor", Convert.ToInt32(txtNomorAntrian.Text));
+                    cmd.Parameters.AddWithValue("@nomor", nomorAntrian);
                     cmd.Parameters.AddWithValue("@berat", beratGabah);
                     cmd.Parameters.AddWithValue("@tanggal", dtpTanggal.Value);
                     cmd.Parameters.AddWithValue("@status", cmbStatus.SelectedItem.ToString());
                     cmd.ExecuteNonQuery();
+                    conn.Close();
                     MessageBox.Show("✅ Antrian baru berhasil ditambahkan!", "Sukses",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -291,12 +435,21 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== TOMBOL BATAL ==========
         private void btnBatal_Click(object sender, EventArgs e)
         {
             DialogResult confirm = MessageBox.Show("Yakin ingin membatalkan?",
                 "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
                 this.Close();
+        }
+
+        // ========== TOMBOL REFRESH NOMOR ANTRIAN ==========
+        private void btnRefreshNomor_Click(object sender, EventArgs e)
+        {
+            GenerateNomorAntrian();
+            MessageBox.Show("✅ Nomor antrian telah direfresh!", "Info",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         // ========== KONVERSI ANGKA DENGAN DUKUNGAN KOMA ==========
@@ -343,6 +496,7 @@ namespace AplikasiGilinganPadi
             }
         }
 
+        // ========== EVENT FORM CLOSING ==========
         private void FormAntrian_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (conn != null && conn.State == ConnectionState.Open)
